@@ -72,7 +72,9 @@ public class DevManager implements IDevManager {
         for(Map.Entry<String, ValueHisPair> entry : this.changeBuffer.get().entrySet()){
             Object obj = entry.getValue().getObj();
             Class className = Class.forName(obj.getClass().getName().split("\\$\\$")[0]);
-            Field field = className.getDeclaredField(entry.getKey());
+            String[] data = entry.getKey().split("\\.");
+            String paraName = data[ data.length-1];
+            Field field = className.getDeclaredField(paraName);
             field.setAccessible(true);
             field.set(obj, entry.getValue().getFormerValue());
         }
@@ -155,18 +157,30 @@ public class DevManager implements IDevManager {
         Class className = method.getDeclaringClass();
         String paraNameFull =className.getName() + "." + paraName;
 
-        if (!methodType.equals("get")) {
+        if (methodType.equals("get")) {
+            if(changeBuffer.get().get(paraNameFull) != null){
+                return proxy.invokeSuper(obj, args);
+            }else{
+                DevParaConfiguration configuration = devParaConfigurationMap.get(paraNameFull);
+                DevConnection devConnection = (DevConnection)devConnectionBuilder.buildConnection(configuration.getHost(),configuration.getPort());
+                DevParaOperator devParaOperator = (DevParaOperator)devConnection.getDevParaOperator();
+                Object result = new Object();
+                switch (configuration.getParaType()){
+                    case Integer -> result = devParaOperator.getDWord(configuration.getSlot(),configuration.getOffset());
+                    case Byte ->result = devParaOperator.getByte(configuration.getSlot(),configuration.getOffset());
+                    case Boolean -> result = devParaOperator.getBit(configuration.getSlot(),configuration.getOffset(),configuration.getBitOffset());
+                    case Float -> result = devParaOperator.getFloat(configuration.getSlot(),configuration.getOffset());
+                }
+                return result;
+            }
+        }else{
             Field field = className.getDeclaredField(paraName);
             field.setAccessible(true);
             Object formerValue = field.get(obj);
             changeBuffer.get().put(paraNameFull, new ValueHisPair(obj, formerValue, args[0]));
+            return proxy.invokeSuper(obj, args);
         }
-        return proxy.invokeSuper(obj, args);
     }
-
-
-
-
 
 
     private void mergeConfigMap(Map<String, DevParaConfiguration> configMap){

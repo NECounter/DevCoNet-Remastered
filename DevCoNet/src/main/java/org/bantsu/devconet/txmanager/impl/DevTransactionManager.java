@@ -1,7 +1,11 @@
 package org.bantsu.devconet.txmanager.impl;
 
+import org.bantsu.devconet.configuration.ValueHisPair;
 import org.bantsu.devconet.devmanager.impl.DevManager;
 import org.bantsu.devconet.txmanager.IDevTransactionManager;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DevTransactionManager implements IDevTransactionManager {
 
@@ -18,19 +22,20 @@ public class DevTransactionManager implements IDevTransactionManager {
 
     @Override
     public void doTransaction() throws Exception {
+        ThreadLocal<Map<String, ValueHisPair>> changeBuffer = new ThreadLocal<>();
+        changeBuffer.set(new HashMap<>());
+        this.devManager.setChangeBuffer(changeBuffer);
         try {
-            doTryTransactionJob();
+            this.doCommitTransactionJob();
         }catch (Exception e){
-            doException(e);
+            this.devManager.rollbackChangeBuffer();
+            return;
         }finally {
             doFinally();
         }
-        doCommitTransactionJob();
+        this.devManager.updateChangeBuffer();
     }
 
-    private void doTryTransactionJob(){
-        this.devTransaction();
-    }
 
     private void doCommitTransactionJob(){
         this.devTransaction();
