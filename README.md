@@ -47,7 +47,6 @@ They are all maven projects, so you can either import them to your exsiting proj
 @DevDataSources --> A collection of various device addresses (instances of data sources). 
 |Parameter name|Type|Description|
 |----|----|----|
-|value|String|an alias of this POJO|
 |DEV_DATA_SOURCE|DevDataSource[]|descriptions device addresses|
 
 @DevDataSource --> A description of the device address. 
@@ -86,8 +85,16 @@ They are all maven projects, so you can either import them to your exsiting proj
         return VD04;
     }
 
+    public void setM0_0(Boolean m0_0) {
+        this.M0_0 = m0_0;
+    }
+
     public void setVD04(Integer VD04) {
         this.VD04 = VD04;
+    }
+
+    public Integer getVD04() {
+        return VD04;
     }
   }
 ```
@@ -97,7 +104,7 @@ They are all maven projects, so you can either import them to your exsiting proj
 IDevManagerBuilder devManagerBuilder =  new DevManagerBuilder();
 //use this builder to build a devManager
 DevManager devManager = (DevManager) devManagerBuilder.buildDevManager();
-//use devManager.getEnhancedDevPara() method get enhanced POJO instance
+//use devManager.getEnhancedDevPara() method to get enhanced POJO instance
 DevParam devParam = (DevParam) devManager.getEnhancedDevPara(DevParam.class);
 ```
 
