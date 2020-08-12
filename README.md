@@ -5,7 +5,7 @@ A data persistence layer framework for accessing industrial devices.
 |Module Name|Description|
 |----|----|
 |DevCoNet|The framework|
-|DevCoNetTest|test case|
+|DevCoNetTest|Test case|
 |DevDataSourceApi|Basic apis of customized data sources|
 |DevSim|Simple industrial device simulator|
 |DevSimDataSource|Customized data sources sample|
