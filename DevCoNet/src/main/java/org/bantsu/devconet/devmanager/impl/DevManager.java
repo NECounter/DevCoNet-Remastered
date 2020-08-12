@@ -7,17 +7,17 @@ import org.bantsu.devconet.anno.resolver.impl.DevParaAnnotationResolver;
 import org.bantsu.devconet.configuration.DevParaConfiguration;
 import org.bantsu.devconet.configuration.ValueHisPair;
 import org.bantsu.devconet.devmanager.IDevManager;
-import org.bantsu.devconet.txmanager.impl.DevTransactionManager;
-import org.bantsu.management.devconnection.connection.impl.DevConnection;
-import org.bantsu.management.devconnection.connection.impl.DevConnectionBuilder;
-import org.bantsu.management.devconnection.operator.impl.DevParaOperator;
+import org.bantsu.devdatasource.api.operator.IDevParaOperator;
+import org.bantsu.devdatasource.devsim.connection.DevConnectionBuilder;
+import org.bantsu.devdatasource.devsim.connection.DevConnectionTCP;
+import org.bantsu.devdatasource.devsim.operator.DevSimParaOperatorTCP;
+
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.PrimitiveIterator;
 
 
 public class DevManager implements IDevManager {
@@ -59,7 +59,7 @@ public class DevManager implements IDevManager {
     }
 
     @Override
-    public Object getEnhancedDevPara(Class c) {
+    public Object getEnhancedDevPara(Class c) throws Exception {
         devParaAnnotationResolver = new DevParaAnnotationResolver(c);
         mergeConfigMap(devParaAnnotationResolver.getFieldAnnotation());
         Enhancer enhancer = new Enhancer();
@@ -86,8 +86,8 @@ public class DevManager implements IDevManager {
     public void updateChangeBuffer() throws Exception {
         for(Map.Entry<String, ValueHisPair> entry : this.changeBuffer.get().entrySet()){
             DevParaConfiguration configuration = devParaConfigurationMap.get(entry.getKey());
-            DevConnection devConnection = (DevConnection)devConnectionBuilder.buildConnection(configuration.getHost(),configuration.getPort());
-            DevParaOperator devParaOperator = (DevParaOperator)devConnection.getDevParaOperator();
+            IDevParaOperator devParaOperator = configuration.getDataSource().getConnection(configuration.getConnectionType()).getDevParaOperator();
+
             switch (configuration.getParaType()){
                 case Integer -> devParaOperator.setDWord(configuration.getSlot(),configuration.getOffset(),(Integer) entry.getValue().getCurrentValue());
                 case Byte -> devParaOperator.setByte(configuration.getSlot(),configuration.getOffset(),(Byte) entry.getValue().getCurrentValue());
@@ -119,8 +119,7 @@ public class DevManager implements IDevManager {
         Class className = method.getDeclaringClass();
         String paraNameFull =className.getName() + "." + paraName;
         DevParaConfiguration configuration = devParaConfigurationMap.get(paraNameFull);
-        DevConnection devConnection = (DevConnection)devConnectionBuilder.buildConnection(configuration.getHost(),configuration.getPort());
-        DevParaOperator devParaOperator = (DevParaOperator)devConnection.getDevParaOperator();
+        IDevParaOperator devParaOperator = configuration.getDataSource().getConnection(configuration.getConnectionType()).getDevParaOperator();
 
         Object result;
         if(methodType.equals("get")){
@@ -162,8 +161,7 @@ public class DevManager implements IDevManager {
                 return proxy.invokeSuper(obj, args);
             }else{
                 DevParaConfiguration configuration = devParaConfigurationMap.get(paraNameFull);
-                DevConnection devConnection = (DevConnection)devConnectionBuilder.buildConnection(configuration.getHost(),configuration.getPort());
-                DevParaOperator devParaOperator = (DevParaOperator)devConnection.getDevParaOperator();
+                IDevParaOperator devParaOperator = configuration.getDataSource().getConnection(configuration.getConnectionType()).getDevParaOperator();
                 Object result = new Object();
                 switch (configuration.getParaType()){
                     case Integer -> result = devParaOperator.getDWord(configuration.getSlot(),configuration.getOffset());

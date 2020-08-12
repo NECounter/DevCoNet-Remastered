@@ -11,6 +11,8 @@
         <option value="$PROJECT_DIR$/../DevCoNetTest/pom.xml" />
         <option value="$PROJECT_DIR$/../DevSim/pom.xml" />
         <option value="$PROJECT_DIR$/../DevConnectionManagement/pom.xml" />
+        <option value="$PROJECT_DIR$/../DevDataSourceApi/pom.xml" />
+        <option value="$PROJECT_DIR$/../DevSimDataSource/pom.xml" />
       </list>
     </option>
   </component>

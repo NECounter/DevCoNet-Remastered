@@ -2,33 +2,41 @@ package org.bantsu.test.devconet.domain;
 
 import org.bantsu.devconet.anno.annos.DevPoJo;
 import org.bantsu.devconet.anno.annos.DevSource;
+import org.bantsu.devconet.anno.annos.datasourceconfig.DevDataSource;
+import org.bantsu.devconet.anno.annos.datasourceconfig.DevDataSources;
+import org.bantsu.devconet.anno.annos.datasourceconfig.SerialPortConfig;
+import org.bantsu.devconet.anno.annos.datasourceconfig.TCPConfig;
 
 import java.io.Serializable;
 
 @DevPoJo("devParam")
+@DevDataSources(DEV_DATA_SOURCE = {
+        @DevDataSource(name = "devSim", sourcePackageName = "org.bantsu.devdatasource.devsim",
+        TCP_CONFIG = @TCPConfig(ip = "127.0.0.1", port = 8080), SERIAL_PORT_CONFIG = @SerialPortConfig())
+})
 public class DevParam implements Serializable {
-    @DevSource(host = "127.0.0.1", slot = "M", port = 8080, offset = 0, bitOffset = 0)
+    @DevSource(slot = "M", offset = 0, bitOffset = 0)
     private Boolean M0_0;
 
-    @DevSource(host = "127.0.0.1", slot = "V", port = 8080, offset = 0, bitOffset = 0)
+    @DevSource(slot = "V", offset = 0, bitOffset = 0)
     private Boolean V0_0;
 
-    @DevSource(host = "127.0.0.1", slot = "M", port = 8080, offset = 1)
+    @DevSource(slot = "M", offset = 1)
     private Byte MB01;
 
-    @DevSource(host = "127.0.0.1", slot = "V", port = 8080, offset = 1)
+    @DevSource(slot = "V", offset = 1)
     private Byte VB01;
 
-    @DevSource(host = "127.0.0.1", slot = "M", port = 8080, offset = 4)
+    @DevSource(slot = "M", offset = 4)
     private Integer MD04;
 
-    @DevSource(host = "127.0.0.1", slot = "V", port = 8080, offset = 4)
+    @DevSource(slot = "V", offset = 4)
     private Integer VD04;
 
-    @DevSource(host = "127.0.0.1", slot = "M", port = 8080, offset = 8)
+    @DevSource(slot = "M", offset = 8)
     private Float MD08f;
 
-    @DevSource(host = "127.0.0.1", slot = "V", port = 8080, offset = 8)
+    @DevSource(slot = "V", offset = 8)
     private Float VD08f;
 
 

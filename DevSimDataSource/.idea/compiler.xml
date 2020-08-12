@@ -6,17 +6,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="DevCoNet" />
-        <module name="devsim" />
         <module name="DevSimDataSource" />
-        <module name="DevDataSourceApi" />
-        <module name="DevCoNetTest" />
       </profile>
     </annotationProcessing>
-  </component>
-  <component name="JavacSettings">
-    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="devsim" options="-parameters" />
-    </option>
   </component>
 </project>

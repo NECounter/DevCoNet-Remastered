@@ -11,26 +11,26 @@ import javax.sound.midi.Soundbank;
 
 public class TestMain {
     public static void main(String[] args) throws Exception {
-       DevManagerBuilder devManagerBuilder =  new DevManagerBuilder();
-       DevManager devManager = (DevManager)devManagerBuilder.getDevManager();
+//        DevParaAnnotationResolver devParaAnnotationResolver = new DevParaAnnotationResolver(DevParam.class);
+//        devParaAnnotationResolver.getFieldAnnotation();
 
-       DevParam devParam = (DevParam) devManager.getEnhancedDevPara(DevParam.class);
-       DevParaAnnotationResolver devParaAnnotationResolver = new DevParaAnnotationResolver(DevParam.class);
-       devParaAnnotationResolver.getFieldAnnotation();
-       devParam.setMD08f(3.14f);
-       System.out.println(devParam.getMD08f());
-       DevTransactionManager transactionManager = new DevTransactionManager(devManager){
+        DevManagerBuilder devManagerBuilder =  new DevManagerBuilder();
+        DevManager devManager = (DevManager)devManagerBuilder.getDevManager();
+        DevParam devParam = (DevParam) devManager.getEnhancedDevPara(DevParam.class);
+        devParam.setMD08f(3.14f);
+        System.out.println(devParam.getMD08f());
+        DevTransactionManager transactionManager = new DevTransactionManager(devManager){
            @Override
            public void devTransaction() {
 
                devParam.setMD08f(3.18f);
-               int a = 1/0;
+//               int a = 1/0;
 
            }
-       };
-       transactionManager.doTransaction();
+        };
+        transactionManager.doTransaction();
 
-       System.out.println(devParam.getMD08f());
+        System.out.println(devParam.getMD08f());
 
     }
 }
