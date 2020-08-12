@@ -1,25 +1,22 @@
 package org.bantsu.test.devconet;
 
-import org.bantsu.devconet.anno.resolver.impl.DevParaAnnotationResolver;
 import org.bantsu.devconet.devmanager.IDevManager;
+import org.bantsu.devconet.devmanager.IDevManagerBuilder;
 import org.bantsu.devconet.devmanager.impl.DevManager;
 import org.bantsu.devconet.devmanager.impl.DevManagerBuilder;
 import org.bantsu.devconet.txmanager.impl.DevTransactionManager;
 import org.bantsu.test.devconet.domain.DevParam;
 
-import javax.sound.midi.Soundbank;
-
 public class TestMain {
     public static void main(String[] args) throws Exception {
-//        DevParaAnnotationResolver devParaAnnotationResolver = new DevParaAnnotationResolver(DevParam.class);
-//        devParaAnnotationResolver.getFieldAnnotation();
 
-        DevManagerBuilder devManagerBuilder =  new DevManagerBuilder();
-        DevManager devManager = (DevManager)devManagerBuilder.getDevManager();
+        IDevManagerBuilder devManagerBuilder =  new DevManagerBuilder();
+        DevManager devManager = (DevManager) devManagerBuilder.buildDevManager();
         DevParam devParam = (DevParam) devManager.getEnhancedDevPara(DevParam.class);
         devParam.setMD08f(3.14f);
         System.out.println(devParam.getMD08f());
-        DevTransactionManager transactionManager = new DevTransactionManager(devManager){
+        DevTransactionManager transactionManager =
+                new DevTransactionManager(devManager){
            @Override
            public void devTransaction() {
 

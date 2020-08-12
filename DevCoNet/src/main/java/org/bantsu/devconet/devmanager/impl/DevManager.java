@@ -8,9 +8,6 @@ import org.bantsu.devconet.configuration.DevParaConfiguration;
 import org.bantsu.devconet.configuration.ValueHisPair;
 import org.bantsu.devconet.devmanager.IDevManager;
 import org.bantsu.devdatasource.api.operator.IDevParaOperator;
-import org.bantsu.devdatasource.devsim.connection.DevConnectionBuilder;
-import org.bantsu.devdatasource.devsim.connection.DevConnectionTCP;
-import org.bantsu.devdatasource.devsim.operator.DevSimParaOperatorTCP;
 
 
 import java.lang.reflect.Field;
@@ -23,7 +20,6 @@ import java.util.Map;
 public class DevManager implements IDevManager {
     private Map<String, DevParaConfiguration> devParaConfigurationMap = new HashMap<>();
     private DevParaAnnotationResolver devParaAnnotationResolver = null;
-    private DevConnectionBuilder devConnectionBuilder = new DevConnectionBuilder();
     private ThreadLocal<Map<String, ValueHisPair>> changeBuffer = null;
 
     public Map<String, DevParaConfiguration> getDevParaConfigurationMap() {
@@ -42,13 +38,6 @@ public class DevManager implements IDevManager {
         this.devParaAnnotationResolver = devParaAnnotationResolver;
     }
 
-    public DevConnectionBuilder getDevConnectionBuilder() {
-        return devConnectionBuilder;
-    }
-
-    public void setDevConnectionBuilder(DevConnectionBuilder devConnectionBuilder) {
-        this.devConnectionBuilder = devConnectionBuilder;
-    }
 
     public ThreadLocal<Map<String, ValueHisPair>> getChangeBuffer() {
         return changeBuffer;

@@ -5,7 +5,7 @@ import org.bantsu.devconet.devmanager.IDevManagerBuilder;
 
 public class DevManagerBuilder implements IDevManagerBuilder {
     @Override
-    public IDevManager getDevManager() {
+    public IDevManager buildDevManager() {
         return new DevManager();
     }
 }
