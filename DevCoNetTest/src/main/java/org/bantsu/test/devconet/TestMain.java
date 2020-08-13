@@ -11,7 +11,7 @@ public class TestMain {
     public static void main(String[] args) throws Exception {
 
         IDevManagerBuilder devManagerBuilder =  new DevManagerBuilder();
-        DevManager devManager = (DevManager) devManagerBuilder.buildDevManager();
+        DevManager devManager = (DevManager) devManagerBuilder.buildConcurrentDevManager(10);
         DevParam devParam = (DevParam) devManager.getEnhancedDevPara(DevParam.class);
         devParam.setMD08f(3.14f);
         System.out.println(devParam.getMD08f());
@@ -28,6 +28,7 @@ public class TestMain {
         transactionManager.doTransaction();
 
         System.out.println(devParam.getMD08f());
+        devManager.dispose();
 
     }
 }

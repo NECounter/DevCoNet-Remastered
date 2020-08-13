@@ -8,4 +8,9 @@ public class DevManagerBuilder implements IDevManagerBuilder {
     public IDevManager buildDevManager() {
         return new DevManager();
     }
+
+    @Override
+    public IDevManager buildConcurrentDevManager(Integer coreSize) {
+        return new DevManager(true, coreSize);
+    }
 }

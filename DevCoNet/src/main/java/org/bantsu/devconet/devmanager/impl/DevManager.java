@@ -7,6 +7,7 @@ import org.bantsu.devconet.anno.resolver.impl.DevParaAnnotationResolver;
 import org.bantsu.devconet.configuration.DevParaConfiguration;
 import org.bantsu.devconet.configuration.ValueHisPair;
 import org.bantsu.devconet.devmanager.IDevManager;
+import org.bantsu.devdatasource.api.configuration.ConnectionType;
 import org.bantsu.devdatasource.api.operator.IDevParaOperator;
 
 
@@ -15,12 +16,39 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 
 public class DevManager implements IDevManager {
     private Map<String, DevParaConfiguration> devParaConfigurationMap = new HashMap<>();
     private DevParaAnnotationResolver devParaAnnotationResolver = null;
     private ThreadLocal<Map<String, ValueHisPair>> changeBuffer = null;
+
+    private Boolean useThreadPool = false;
+
+    private ExecutorService executorTCP = null;
+
+    private ExecutorService executorSerial = null;
+
+    public DevManager() {
+
+    }
+
+    public DevManager(Boolean useThreadPool, Integer coreSize) {
+        this.useThreadPool = useThreadPool;
+        this.executorTCP = Executors.newFixedThreadPool(coreSize);
+        this.executorSerial = Executors.newSingleThreadExecutor();
+    }
+
+    public void dispose(){
+        if(this.executorSerial != null && this.executorTCP != null){
+            this.executorTCP.shutdown();
+            this.executorSerial.shutdown();
+        }
+    }
 
     public Map<String, DevParaConfiguration> getDevParaConfigurationMap() {
         return devParaConfigurationMap;
@@ -75,14 +103,18 @@ public class DevManager implements IDevManager {
     public void updateChangeBuffer() throws Exception {
         for(Map.Entry<String, ValueHisPair> entry : this.changeBuffer.get().entrySet()){
             DevParaConfiguration configuration = devParaConfigurationMap.get(entry.getKey());
-            IDevParaOperator devParaOperator = configuration.getDataSource().getConnection(configuration.getConnectionType()).getDevParaOperator();
-
-            switch (configuration.getParaType()){
-                case Integer -> devParaOperator.setDWord(configuration.getSlot(),configuration.getOffset(),(Integer) entry.getValue().getCurrentValue());
-                case Byte -> devParaOperator.setByte(configuration.getSlot(),configuration.getOffset(),(Byte) entry.getValue().getCurrentValue());
-                case Boolean -> devParaOperator.setBit(configuration.getSlot(),configuration.getOffset(),configuration.getBitOffset(), (Boolean) entry.getValue().getCurrentValue());
-                case Float -> devParaOperator.setFloat(configuration.getSlot(),configuration.getOffset(), (Float) entry.getValue().getCurrentValue());
+            if(this.useThreadPool){
+                Callable<Object> setTask = new setParamTask(configuration, entry.getValue().getCurrentValue());
+                if(configuration.getConnectionType()== ConnectionType.TCP){
+                    executorTCP.submit(setTask);
+                }
+                if(configuration.getConnectionType()== ConnectionType.Serial){
+                    executorSerial.submit(setTask);
+                }
+            }else{
+                this.setParam(configuration, entry.getValue().getCurrentValue());
             }
+
         }
         this.changeBuffer.get().clear();
         this.changeBuffer.remove();
@@ -110,26 +142,38 @@ public class DevManager implements IDevManager {
         DevParaConfiguration configuration = devParaConfigurationMap.get(paraNameFull);
         IDevParaOperator devParaOperator = configuration.getDataSource().getConnection(configuration.getConnectionType()).getDevParaOperator();
 
-        Object result;
+        Object result = null;
+        Future<Object> future = null;
         if(methodType.equals("get")){
-            switch (configuration.getParaType()){
-                case Integer -> result = devParaOperator.getDWord(configuration.getSlot(),configuration.getOffset());
-                case Byte ->result = devParaOperator.getByte(configuration.getSlot(),configuration.getOffset());
-                case Boolean -> result = devParaOperator.getBit(configuration.getSlot(),configuration.getOffset(),configuration.getBitOffset());
-                case Float -> result = devParaOperator.getFloat(configuration.getSlot(),configuration.getOffset());
-                default -> result = new Object();
+            if(this.useThreadPool){
+                Callable<Object> getTask = new getParamTask(configuration);
+                if(configuration.getConnectionType()== ConnectionType.TCP) {
+                    future = executorTCP.submit(getTask);
+                }
+                if(configuration.getConnectionType()== ConnectionType.Serial){
+                    future = executorSerial.submit(getTask);
+                }
+                result = future.get();
+            }else{
+                result = this.getParam(configuration);
             }
+
             Field field = className.getDeclaredField(paraName);
             field.setAccessible(true);
             field.set(obj, result);
 
         }else{
-            switch (configuration.getParaType()){
-                case Integer -> result = devParaOperator.setDWord(configuration.getSlot(),configuration.getOffset(),(Integer)args[0]);
-                case Byte ->result = devParaOperator.setByte(configuration.getSlot(),configuration.getOffset(),(Byte) args[0]);
-                case Boolean -> result = devParaOperator.setBit(configuration.getSlot(),configuration.getOffset(),configuration.getBitOffset(), (Boolean) args[0]);
-                case Float -> result = devParaOperator.setFloat(configuration.getSlot(),configuration.getOffset(), (Float) args[0]);
-                default -> result = new Object();
+            if(this.useThreadPool){
+            Callable<Object> setTask = new setParamTask(configuration, args[0]);
+                if(configuration.getConnectionType()== ConnectionType.TCP){
+                    future = executorTCP.submit(setTask);
+                }
+                if(configuration.getConnectionType()== ConnectionType.Serial){
+                    future = executorSerial.submit(setTask);
+                }
+                result = future.get();
+            }else{
+                result = setParam(configuration, args[0]);
             }
             proxy.invokeSuper(obj, args);
         }
@@ -149,16 +193,21 @@ public class DevManager implements IDevManager {
             if(changeBuffer.get().get(paraNameFull) != null){
                 return proxy.invokeSuper(obj, args);
             }else{
+                Future<Object> future = null;
                 DevParaConfiguration configuration = devParaConfigurationMap.get(paraNameFull);
-                IDevParaOperator devParaOperator = configuration.getDataSource().getConnection(configuration.getConnectionType()).getDevParaOperator();
-                Object result = new Object();
-                switch (configuration.getParaType()){
-                    case Integer -> result = devParaOperator.getDWord(configuration.getSlot(),configuration.getOffset());
-                    case Byte ->result = devParaOperator.getByte(configuration.getSlot(),configuration.getOffset());
-                    case Boolean -> result = devParaOperator.getBit(configuration.getSlot(),configuration.getOffset(),configuration.getBitOffset());
-                    case Float -> result = devParaOperator.getFloat(configuration.getSlot(),configuration.getOffset());
+                if(this.useThreadPool){
+                    Callable<Object> getTask = new getParamTask(configuration);
+                    if(configuration.getConnectionType()== ConnectionType.TCP){
+                        future = executorTCP.submit(getTask);
+                    }
+                    if(configuration.getConnectionType()== ConnectionType.Serial){
+                        future = executorSerial.submit(getTask);
+                    }
+                    return future.get();
+                }else{
+                    return this.getParam(configuration);
                 }
-                return result;
+
             }
         }else{
             Field field = className.getDeclaredField(paraName);
@@ -175,4 +224,58 @@ public class DevManager implements IDevManager {
             devParaConfigurationMap.put(entry.getKey(), entry.getValue());
         }
     }
+
+    private Object getParam(DevParaConfiguration configuration) throws Exception {
+        IDevParaOperator devParaOperator = configuration.getDataSource().getConnection(configuration.getConnectionType()).getDevParaOperator();
+        Object result = new Object();
+        switch (configuration.getParaType()){
+            case Integer -> result = devParaOperator.getDWord(configuration.getSlot(),configuration.getOffset());
+            case Byte ->result = devParaOperator.getByte(configuration.getSlot(),configuration.getOffset());
+            case Boolean -> result = devParaOperator.getBit(configuration.getSlot(),configuration.getOffset(),configuration.getBitOffset());
+            case Float -> result = devParaOperator.getFloat(configuration.getSlot(),configuration.getOffset());
+        }
+        return result;
+    }
+
+    private Object setParam(DevParaConfiguration configuration, Object value) throws Exception {
+        IDevParaOperator devParaOperator = configuration.getDataSource().getConnection(configuration.getConnectionType()).getDevParaOperator();
+        Object result = new Object();
+        switch (configuration.getParaType()){
+            case Integer -> result = devParaOperator.setDWord(configuration.getSlot(),configuration.getOffset(),(Integer) value);
+            case Byte ->result = devParaOperator.setByte(configuration.getSlot(),configuration.getOffset(),(Byte) value);
+            case Boolean -> result = devParaOperator.setBit(configuration.getSlot(),configuration.getOffset(),configuration.getBitOffset(), (Boolean) value);
+            case Float -> result = devParaOperator.setFloat(configuration.getSlot(),configuration.getOffset(), (Float) value);
+            default -> result = new Object();
+        }
+        return result;
+    }
+
+    class getParamTask implements Callable<Object> {
+        private DevParaConfiguration configuration = null;
+
+        public getParamTask(DevParaConfiguration configuration) {
+            this.configuration = configuration;
+        }
+
+        @Override
+        public Object call() throws Exception {
+            return getParam(configuration);
+        }
+    }
+
+    class setParamTask implements Callable<Object> {
+        private DevParaConfiguration configuration = null;
+        private Object value = null;
+
+        public setParamTask(DevParaConfiguration configuration, Object value) {
+            this.configuration = configuration;
+            this.value = value;
+        }
+
+        @Override
+        public Object call() throws Exception {
+           return setParam(configuration, value);
+        }
+    }
+
 }

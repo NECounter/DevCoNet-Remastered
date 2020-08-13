@@ -111,18 +111,30 @@ They are all maven projects, so you can either import them to your exsiting proj
   }
 ```
 
-### Enhance POJO
+### Build DevManager
 
 ```java
 //get a devManagerBuilder
 IDevManagerBuilder devManagerBuilder =  new DevManagerBuilder();
 //use this builder to build a devManager
 DevManager devManager = (DevManager) devManagerBuilder.buildDevManager();
+```
+
+- `If your customized data source doesn't support concurrent tasks, we provide a ConcurrentDevManager to make things up. But when using this, the dispose() method should be called at the end of it's lifecycle.`
+
+```java
+//use this builder to build a ConcurrentDevManager, 'coreSize' is the corePoolSize of ThreadPool.
+DevManager devManager = (DevManager) devManagerBuilder.buildConcurrentDevManager(coreSize);
+```
+
+### Enhance POJO
+
+```java
 //use devManager.getEnhancedDevPara() method to get enhanced POJO instance
 DevParam devParam = (DevParam) devManager.getEnhancedDevPara(DevParam.class);
 ```
 
-#### Interact with device parameters using POJO instance
+### Interact with device parameters using POJO instance
 
 ```java
 //set
