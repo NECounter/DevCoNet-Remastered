@@ -1,7 +1,9 @@
 # DevCoNet-Remastered
+
 A data persistence layer framework for accessing industrial devices.
 
 ## Intro
+
 |Module Name|Description|
 |----|----|
 |DevCoNet|The framework|
@@ -9,12 +11,15 @@ A data persistence layer framework for accessing industrial devices.
 |DevDataSourceApi|Basic apis of customized data sources|
 |DevSim|Simple industrial device simulator|
 |DevSimDataSource|Customized data sources sample|
-#### Note that this project is in a very early stage, and documentation will be added later on.
+
+`Note that this project is in a very early stage, and documentation will be added later on.`
 
 ## Install
+
 They are all maven projects, so you can either import them to your exsiting projects or package them before use.
 
 - Import the framework
+
   ```xml
     <dependency>
         <groupId>org.bantsu.devconet</groupId>
@@ -22,7 +27,9 @@ They are all maven projects, so you can either import them to your exsiting proj
         <version>1.0-SNAPSHOT</version>
     </dependency>
   ```
+
 - Import data sources
+
   ```xml
     <dependency>
         <groupId>org.bantsu</groupId>
@@ -31,25 +38,28 @@ They are all maven projects, so you can either import them to your exsiting proj
         <scope>compile</scope>
     </dependency>
   ```
+
   If you have implemented a customized data source, you can also import it in the same way.
 
 ## How to use
-#### Define POJOs
+
+### Define POJOs
   
   First, define the POJO, which indicates a group of device parameters you would like to interact with.
 
-#### Set annotations
+### Set annotations
+
 @DevPoJo --> To declare this POJO as a collection of device parameters.
 |Parameter name|Type|Description|
 |----|----|----|
 |value|String|an alias of this POJO|
 
-@DevDataSources --> A collection of various device addresses (instances of data sources). 
+@DevDataSources --> A collection of various device addresses (instances of data sources).
 |Parameter name|Type|Description|
 |----|----|----|
 |DEV_DATA_SOURCE|DevDataSource[]|descriptions device addresses|
 
-@DevDataSource --> A description of the device address. 
+@DevDataSource --> A description of the device address.
 |Parameter name|Type|Description|
 |----|----|----|
 |name|String|name for this data source|
@@ -57,18 +67,20 @@ They are all maven projects, so you can either import them to your exsiting proj
 |TCP_CONFIG|TCPConfig|essential TCP parameters|
 |SERIAL_PORT_CONFIG|SerialPortConfig|essential SerialPort parameters|
 
-@TCPConfig --> Refer to the source code. 
+@TCPConfig --> Refer to the source code.
 
-@SerialPortConfig --> Refer to the source code. 
-#### A typical POJO
+@SerialPortConfig --> Refer to the source code.
+
+### A typical POJO
+
 ```java
   @DevPoJo("devParam")
   @DevDataSources(DEV_DATA_SOURCE = {
-        @DevDataSource(name = "devSim_1", 
+        @DevDataSource(name = "devSim_1",
         sourcePackageName = "org.bantsu.devdatasource.devsim",
         TCP_CONFIG = @TCPConfig(ip = "192.168.1.1", port = 502),
         SERIAL_PORT_CONFIG = @SerialPortConfig()),
-        @DevDataSource(name = "devSim_2", 
+        @DevDataSource(name = "devSim_2",
         sourcePackageName = "org.bantsu.devdatasource.devsim",
         TCP_CONFIG = @TCPConfig(ip = "192.168.1.2", port = 502),
         SERIAL_PORT_CONFIG = @SerialPortConfig())
@@ -98,7 +110,9 @@ They are all maven projects, so you can either import them to your exsiting proj
     }
   }
 ```
-#### Enhance POJO 
+
+### Enhance POJO
+
 ```java
 //get a devManagerBuilder
 IDevManagerBuilder devManagerBuilder =  new DevManagerBuilder();
@@ -109,6 +123,7 @@ DevParam devParam = (DevParam) devManager.getEnhancedDevPara(DevParam.class);
 ```
 
 #### Interact with device parameters using POJO instance
+
 ```java
 //set
 devParam.setVD04(1096);
@@ -116,9 +131,10 @@ devParam.setVD04(1096);
 Boolen result = devParam.getM0_0();
 ```
 
-#### Transaction control
+### Transaction control
+
 ```java
-DevTransactionManager transactionManager = 
+DevTransactionManager transactionManager =
         new DevTransactionManager(devManager){
     //override devTransaction() with your codes
     @Override
@@ -126,13 +142,11 @@ DevTransactionManager transactionManager =
         int result = devParam.getMD04();
         rusult -= 100;
         devParam.setMD04(rusult);
+        //Here comes an error
+        int divByZero = 1 / 0;
         devParam.setM0_0(reult==42);
     }
 };
 //start the transaction
 transactionManager.doTransaction();
 ```
-
-
-
-
