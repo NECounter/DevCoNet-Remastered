@@ -6,8 +6,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
 
+/**
+ * A combination annotation of DevDataSource
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface DevDataSources {
+    /**
+     * A collection of DevDataSources
+     * @return
+     */
     DevDataSource[] DEV_DATA_SOURCE();
 }

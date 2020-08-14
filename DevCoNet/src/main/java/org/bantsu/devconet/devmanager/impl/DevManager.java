@@ -78,7 +78,7 @@ public class DevManager implements IDevManager {
     @Override
     public Object getEnhancedDevPara(Class c) throws Exception {
         devParaAnnotationResolver = new DevParaAnnotationResolver(c);
-        mergeConfigMap(devParaAnnotationResolver.getFieldAnnotation());
+        mergeConfigMap(devParaAnnotationResolver.getDevParaConfigMap());
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(c);
         return devParaProxy(enhancer).create();

@@ -13,16 +13,25 @@ import org.bantsu.devdatasource.api.datasource.IDevDataSource;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * An AnnotationResolver
+ */
 public class DevParaAnnotationResolver implements IAnnotationResolver {
+
+    /**
+     * The class type of a POJO
+     */
     private Class devParaClass = null;
 
 
     public DevParaAnnotationResolver(Class devParaClass) {
         this.devParaClass = devParaClass;
     }
+
 
     @Override
     public Field[] getFields() {
@@ -34,6 +43,11 @@ public class DevParaAnnotationResolver implements IAnnotationResolver {
         return devParaClass.getAnnotations();
     }
 
+    /**
+     * Get a map of defined data sources
+     * @return A map of DataSources<data source name, DevDataSource>
+     * @throws Exception Class not found
+     */
     private Map<String, IDevDataSource> getDevDataSourcesMap() throws Exception {
         Map<String, IDevDataSource> devDataSourcesMap = new HashMap<>();
         DevDataSources devDataSourcesAnno = (DevDataSources) devParaClass.getAnnotation(DevDataSources.class);
@@ -63,7 +77,7 @@ public class DevParaAnnotationResolver implements IAnnotationResolver {
     }
 
     @Override
-    public Map<String, DevParaConfiguration> getFieldAnnotation() throws Exception {
+    public Map<String, DevParaConfiguration> getDevParaConfigMap() throws Exception {
         Map<String, IDevDataSource> devDataSourcesMap = this.getDevDataSourcesMap();
         Map<String, DevParaConfiguration> annotationMap = new HashMap<>();
         for(Field field: this.getFields()){

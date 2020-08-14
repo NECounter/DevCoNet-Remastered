@@ -1,12 +1,32 @@
 package org.bantsu.devconet.anno.resolver;
 
+import org.bantsu.devconet.configuration.DevParaConfiguration;
 import org.bantsu.devdatasource.api.datasource.IDevDataSource;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-public interface IAnnotationResolver<T>{
+/**
+ * Interface of the Resolver of Class and Field Annotations
+ */
+public interface IAnnotationResolver {
+    /**
+     * Get all field variables
+     * @return Array of field variables
+     */
     Field[] getFields();
-    T getClassAnnotation();
-    Map<String, T> getFieldAnnotation() throws Exception;
+
+    /**
+     * Get all annotations of the Class domain
+     * @return
+     */
+    Annotation[] getClassAnnotation();
+
+    /**
+     * Get DevParaConfigurations of all field variables
+     * @return DevParaConfigurationsMap<full qualified field name, DevParaConfiguration>
+     * @throws Exception Class not found
+     */
+    Map<String, DevParaConfiguration> getDevParaConfigMap() throws Exception;
 }
