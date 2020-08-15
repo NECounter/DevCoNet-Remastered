@@ -1,8 +1,25 @@
 package org.bantsu.devconet.configuration;
 
+/**
+ * A data type that stores the history value of an object
+ * @param <T> type of the value
+ */
 public class ValueHisPair <T>{
+
+    /**
+     * the object(usually the dynamic proxy object)
+     */
+
     private Object obj = null;
+
+    /**
+     * the former value
+     */
     private T formerValue = null;
+
+    /**
+     * the current value
+     */
     private T currentValue = null;
 
     public ValueHisPair(Object obj, T formerValue, T currentValue) {

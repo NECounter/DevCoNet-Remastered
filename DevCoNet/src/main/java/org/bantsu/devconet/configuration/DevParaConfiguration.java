@@ -3,6 +3,9 @@ package org.bantsu.devconet.configuration;
 import org.bantsu.devdatasource.api.configuration.ConnectionType;
 import org.bantsu.devdatasource.api.datasource.IDevDataSource;
 
+/**
+ * A class to store the configurations of each field of a POJO
+ */
 public class DevParaConfiguration {
     private String slot = null;
     private Integer offset = null;
@@ -12,6 +15,7 @@ public class DevParaConfiguration {
     private ParaType paraType = null;
 
     private IDevDataSource dataSource = null;
+
     private ConnectionType connectionType = null;
 
 
@@ -61,5 +65,18 @@ public class DevParaConfiguration {
 
     public void setBitOffset(Integer bitOffset) {
         this.bitOffset = bitOffset;
+    }
+
+
+    @Override
+    public String toString() {
+        return "DevParaConfiguration{" +
+                "slot='" + slot + '\'' +
+                ", offset=" + offset +
+                ", bitOffset=" + bitOffset +
+                ", paraType=" + paraType +
+                ", dataSource=" + dataSource +
+                ", connectionType=" + connectionType +
+                '}';
     }
 }

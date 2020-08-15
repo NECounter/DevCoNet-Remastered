@@ -21,7 +21,7 @@ public class TestMain {
            public void devTransaction() {
 
                devParam.setMD08f(3.18f);
-//               int a = 1/0;
+               int a = 1/0;
 
            }
         };
