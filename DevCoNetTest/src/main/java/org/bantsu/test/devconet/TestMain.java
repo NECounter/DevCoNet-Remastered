@@ -9,11 +9,15 @@ import org.bantsu.test.devconet.domain.DevParam;
 
 public class TestMain {
     public static void main(String[] args) throws Exception {
+//        for(int i=0; i<3; i++){
+//            System.out.println(i);
+//        }
 
         IDevManagerBuilder devManagerBuilder =  new DevManagerBuilder();
         DevManager devManager = (DevManager) devManagerBuilder.buildConcurrentDevManager(10);
+//        DevManager devManager = (DevManager) devManagerBuilder.buildDevManager();
         DevParam devParam = (DevParam) devManager.getEnhancedDevPara(DevParam.class);
-        devParam.setMD08f(3.14f);
+        devParam.setMD08f(3.15f);
         System.out.println(devParam.getMD08f());
         DevTransactionManager transactionManager =
                 new DevTransactionManager(devManager){
@@ -21,11 +25,34 @@ public class TestMain {
            public void devTransaction() {
 
                devParam.setMD08f(3.18f);
-               int a = 1/0;
+               devParam.setMD08f(3.17f);
+               devParam.setMD08f(3.16f);
+//               System.out.println("In Trans: " + devParam.getMD08f());
+//               int a = 1/0;
 
            }
         };
         transactionManager.doTransaction();
+
+
+
+        System.out.println(devParam.getMD08f());
+
+        DevTransactionManager transactionManager1 =
+                new DevTransactionManager(devManager){
+                    @Override
+                    public void devTransaction() {
+
+                        devParam.setMD08f(3.18f);
+                        devParam.setMD08f(3.17f);
+                        devParam.setMD08f(3.1323f);
+//               System.out.println("In Trans: " + devParam.getMD08f());
+//               int a = 1/0;
+
+                    }
+                };
+
+        transactionManager1.doTransaction();
 
         System.out.println(devParam.getMD08f());
         devManager.dispose();

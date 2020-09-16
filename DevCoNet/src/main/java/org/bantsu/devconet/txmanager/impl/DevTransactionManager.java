@@ -5,6 +5,7 @@ import org.bantsu.devconet.devmanager.IDevManager;
 import org.bantsu.devconet.devmanager.impl.DevManager;
 import org.bantsu.devconet.txmanager.IDevTransactionManager;
 
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +31,8 @@ public class DevTransactionManager implements IDevTransactionManager {
     @Override
     public void doTransaction() throws Exception {
         try {
+            //One changeBuffer for one Thread
+            devManager.setChangeBuffer(new HashMap<>());
             // Before advice
             this.doCommitTransactionJob();
         }catch (Exception e){
@@ -74,5 +77,6 @@ public class DevTransactionManager implements IDevTransactionManager {
     private void doCommit() throws Exception {
         //commit
         this.devManager.updateChangeBuffer();
+//        System.out.println("updateChangeBuffer");
     }
 }

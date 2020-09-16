@@ -16,10 +16,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A Device Manager mainly to enhance parameters and to control the interactions between host and devices.
@@ -52,6 +50,15 @@ public class DevManager implements IDevManager {
      */
     private ExecutorService executorTCP = null;
     private ExecutorService executorSerial = null;
+    /**
+     * A global lock
+     */
+    private volatile ReentrantLock lock = new ReentrantLock();
+
+    /**
+     * A latch that aviod non-trans job to execute before trans job when using thread pool
+     */
+    private volatile ThreadLocal<CountDownLatch> latch;
     //endregion
 
     //region Constructors
@@ -59,7 +66,6 @@ public class DevManager implements IDevManager {
      * Construct a default devManager without concurrent support
      */
     public DevManager() {
-        this.changeBuffer.set(new HashMap<>());
 
     }
 
@@ -71,7 +77,8 @@ public class DevManager implements IDevManager {
         this.useThreadPool = true;
         this.executorTCP = Executors.newFixedThreadPool(coreSize);
         this.executorSerial = Executors.newSingleThreadExecutor();
-        this.changeBuffer.set(new HashMap<>());
+        this.latch = new ThreadLocal<>();
+        this.latch.set(new CountDownLatch(0));
     }
     //endregion
 
@@ -97,8 +104,8 @@ public class DevManager implements IDevManager {
         return changeBuffer;
     }
 
-    public void setChangeBuffer(ThreadLocal<Map<String, ValueHisPair>> changeBuffer) {
-        this.changeBuffer = changeBuffer;
+    public void setChangeBuffer(Map<String, ValueHisPair> changeBuffer) {
+        this.changeBuffer.set(changeBuffer);
     }
     //endregion
 
@@ -112,6 +119,10 @@ public class DevManager implements IDevManager {
         return devParaProxy(enhancer).create();
     }
 
+    /**
+     * Roll back when error occured in a trans
+     * @throws Exception
+     */
     @Override
     public void rollbackChangeBuffer() throws Exception {
         for(Map.Entry<String, ValueHisPair> entry : this.changeBuffer.get().entrySet()){
@@ -127,14 +138,22 @@ public class DevManager implements IDevManager {
         this.changeBuffer.remove();
     }
 
+
+    /**
+     * Commit changes in trans to devices
+     * @throws Exception
+     */
     @Override
     public void updateChangeBuffer() throws Exception {
+        this.latch.remove();
+        this.latch.set(new CountDownLatch(this.changeBuffer.get().size()));
         for(Map.Entry<String, ValueHisPair> entry : this.changeBuffer.get().entrySet()){
             DevParaConfiguration configuration = devParaConfigurationMap.get(entry.getKey());
             if(this.useThreadPool){
-                Callable<Object> setTask = new setParamTask(configuration, entry.getValue().getCurrentValue());
+                Callable<Object> setTask = new setParamUpdateTask(configuration, entry.getValue().getCurrentValue(),this.latch.get());
                 if(configuration.getConnectionType()== ConnectionType.TCP){
                     executorTCP.submit(setTask);
+//                    System.out.println("buffer: executorTCP.submit(setTask)");
                 }
                 if(configuration.getConnectionType()== ConnectionType.Serial){
                     executorSerial.submit(setTask);
@@ -202,11 +221,14 @@ public class DevManager implements IDevManager {
         if(methodType.equals("get")){
             //Get value from devices
             if(this.useThreadPool){
-                Callable<Object> getTask = new getParamTask(configuration);
+                Callable<Object> getTask = new getParamTask(configuration, this.latch.get());
                 if(configuration.getConnectionType()== ConnectionType.TCP) {
+//                    while (!this.executorTCPUpdate.isTerminated()) Thread.sleep(10);
                     future = executorTCP.submit(getTask);
+//                    System.out.println("get: executorTCP.submit(getTask)");
                 }
                 if(configuration.getConnectionType()== ConnectionType.Serial){
+//                    while (!this.executorSerialUpdate.isTerminated()) Thread.sleep(10);
                     future = executorSerial.submit(getTask);
                 }
                 assert future != null;
@@ -223,7 +245,7 @@ public class DevManager implements IDevManager {
         }else{
             //Set value to devices
             if(this.useThreadPool){
-            Callable<Object> setTask = new setParamTask(configuration, args[0]);
+            Callable<Object> setTask = new setParamTask(configuration, args[0], this.latch.get());
                 if(configuration.getConnectionType()== ConnectionType.TCP){
                     future = executorTCP.submit(setTask);
                 }
@@ -263,7 +285,7 @@ public class DevManager implements IDevManager {
                 Future<Object> future = null;
                 DevParaConfiguration configuration = devParaConfigurationMap.get(paraNameFull);
                 if(this.useThreadPool){
-                    Callable<Object> getTask = new getParamTask(configuration);
+                    Callable<Object> getTask = new getParamTask(configuration, this.latch.get());
                     if(configuration.getConnectionType()== ConnectionType.TCP){
                         future = executorTCP.submit(getTask);
                     }
@@ -340,31 +362,68 @@ public class DevManager implements IDevManager {
 
     //region Inner Classes
     class getParamTask implements Callable<Object> {
-        private DevParaConfiguration configuration = null;
+        protected DevParaConfiguration configuration = null;
+        protected CountDownLatch latch = null;
 
-        public getParamTask(DevParaConfiguration configuration) {
+        public getParamTask(DevParaConfiguration configuration, CountDownLatch latch) {
             this.configuration = configuration;
+            this.latch = latch;
         }
 
         @Override
         public Object call() throws Exception {
-            return getParam(configuration);
+            latch.await();
+            Object res = getParam(configuration);
+            return res;
+        }
+    }
+
+    class getParamUpdateTask extends getParamTask{
+
+        public getParamUpdateTask(DevParaConfiguration configuration, CountDownLatch latch) {
+            super(configuration, latch);
+        }
+
+        @Override
+        public Object call() throws Exception {
+            Object res = getParam(configuration);
+            latch.countDown();
+            return res;
         }
     }
 
     class setParamTask implements Callable<Object> {
-        private DevParaConfiguration configuration = null;
-        private Object value = null;
+        protected DevParaConfiguration configuration = null;
+        protected Object value = null;
+        protected CountDownLatch latch = null;
 
-        public setParamTask(DevParaConfiguration configuration, Object value) {
+        public setParamTask(DevParaConfiguration configuration, Object value, CountDownLatch latch) {
             this.configuration = configuration;
             this.value = value;
+            this.latch = latch;
         }
 
         @Override
         public Object call() throws Exception {
-           return setParam(configuration, value);
+            latch.await();
+            Object res = setParam(configuration, value);
+            return res;
         }
+    }
+
+    class setParamUpdateTask extends setParamTask{
+
+        public setParamUpdateTask(DevParaConfiguration configuration, Object value, CountDownLatch latch) {
+            super(configuration, value, latch);
+        }
+
+        @Override
+        public Object call() throws Exception {
+            Object res = setParam(configuration, value);
+            latch.countDown();
+            return res;
+        }
+
     }
     //endregion
 }
