@@ -1,8 +1,21 @@
 package org.bantsu.devdatasource.api.operator;
 
+import org.bantsu.devdatasource.api.connection.IDevConnection;
+
 import java.io.IOException;
 
+/**
+ * When defining a customized dataSource, implement this interface
+ */
 public interface IDevParaOperator {
+    /*
+    * Two implements should be carried out,
+    * and must exactly follow the name `OperatorTCP` and `OperatorSerial`
+    * when using TCP and Serial respectively.
+    * Each of which should contain the constructor with one specific type of parameter,
+    * which is the type of DevConnectionTCP and DevConnectionSerial respectively.
+    * */
+
     Boolean getBit(String slot, int offset, int bitOffset) throws IOException;
     Boolean setBit(String slot,int offset, int bitOffset, boolean value) throws IOException;
 

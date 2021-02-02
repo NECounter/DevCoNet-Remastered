@@ -1,17 +1,17 @@
 package org.bantsu.devdatasource.devsim.operator;
 
+import org.bantsu.devdatasource.api.connection.impl.DevConnectionTCP;
 import org.bantsu.devdatasource.api.operator.IDevParaOperator;
-import org.bantsu.devdatasource.devsim.connection.DevConnectionTCP;
 import org.bantsu.devdatasource.devsim.utils.NetUtils;
 
 import java.io.IOException;
 
-public class DevSimParaOperatorTCP implements IDevParaOperator {
+public class OperatorTCP implements IDevParaOperator {
 
     private DevConnectionTCP connection = null;
     private String url = null;
 
-    public DevSimParaOperatorTCP(DevConnectionTCP connection) {
+    public OperatorTCP(DevConnectionTCP connection) {
         this.connection = connection;
         this.url = "http://" +this.connection.getHost()+":" + this.connection.getPort()+"/";
     }

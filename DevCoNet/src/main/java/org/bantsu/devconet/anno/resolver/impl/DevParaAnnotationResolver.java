@@ -9,11 +9,11 @@ import org.bantsu.devconet.configuration.ParaType;
 import org.bantsu.devdatasource.api.configuration.SerialPortConfig;
 import org.bantsu.devdatasource.api.configuration.TCPConfig;
 import org.bantsu.devdatasource.api.datasource.IDevDataSource;
+import org.bantsu.devdatasource.api.datasource.impl.DefaultDevDataSource;
+
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +57,7 @@ public class DevParaAnnotationResolver implements IAnnotationResolver {
         for (DevDataSource devDataSourceAnno : devDataSourceAnnos) {
             String dataSourceName = devDataSourceAnno.name();
             //It's appointed that data source is defined as DevDataSource in the package of datasource.
-            String sourceClassName = devDataSourceAnno.sourcePackageName() + ".datasource.DevDataSource";
+            String sourceClassName = devDataSourceAnno.sourcePackageName();
             //Get the TCP Config
             TCPConfig tcpConfig = new TCPConfig();
             tcpConfig.setIp(devDataSourceAnno.TCP_CONFIG().ip());
@@ -72,9 +72,10 @@ public class DevParaAnnotationResolver implements IAnnotationResolver {
             serialPortConfig.setStopBit(devDataSourceAnno.SERIAL_PORT_CONFIG().stopBit());
             serialPortConfig.setVerifyMode(devDataSourceAnno.SERIAL_PORT_CONFIG().verifyMode());
             //Get the data source class by reflection
-            Class dataSourceClass = Class.forName(sourceClassName);
-            Constructor constructor = dataSourceClass.getConstructor(TCPConfig.class, SerialPortConfig.class);
-            IDevDataSource dataSource = (IDevDataSource) constructor.newInstance(new Object[]{tcpConfig, serialPortConfig});
+//            Class dataSourceClass = Class.forName(sourceClassName);
+//            Constructor constructor = dataSourceClass.getConstructor(TCPConfig.class, SerialPortConfig.class);
+//            IDevDataSource dataSource = (IDevDataSource) constructor.newInstance(new Object[]{tcpConfig, serialPortConfig});
+            IDevDataSource dataSource = new DefaultDevDataSource(tcpConfig, serialPortConfig, sourceClassName);
             //Put pair<name, dataSource> into map
             devDataSourcesMap.put(dataSourceName, dataSource);
             }

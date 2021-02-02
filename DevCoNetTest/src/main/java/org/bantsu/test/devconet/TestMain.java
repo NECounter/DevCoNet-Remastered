@@ -47,7 +47,7 @@ public class TestMain {
                         devParam.setMD08f(3.17f);
                         devParam.setMD08f(3.1323f);
 //               System.out.println("In Trans: " + devParam.getMD08f());
-//               int a = 1/0;
+                        int a = 1/0;
 
                     }
                 };

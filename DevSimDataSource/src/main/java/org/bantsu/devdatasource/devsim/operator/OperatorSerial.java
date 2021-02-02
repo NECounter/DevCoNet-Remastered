@@ -1,17 +1,17 @@
 package org.bantsu.devdatasource.devsim.operator;
 
+import org.bantsu.devdatasource.api.connection.impl.DevConnectionSerial;
 import org.bantsu.devdatasource.api.operator.IDevParaOperator;
-import org.bantsu.devdatasource.devsim.connection.DevConnectionSerial;
-import org.bantsu.devdatasource.devsim.connection.DevConnectionTCP;
+
 
 import java.io.IOException;
 
-public class DevSimParaOperatorSerial implements IDevParaOperator {
+public class OperatorSerial implements IDevParaOperator {
 
     private DevConnectionSerial connection = null;
     private String url = null;
 
-    public DevSimParaOperatorSerial(DevConnectionSerial connection) {
+    public OperatorSerial(DevConnectionSerial connection) {
         this.connection = connection;
     }
 

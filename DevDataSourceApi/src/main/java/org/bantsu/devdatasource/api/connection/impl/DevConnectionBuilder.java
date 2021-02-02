@@ -1,12 +1,11 @@
-package org.bantsu.devdatasource.devsim.connection;
+package org.bantsu.devdatasource.api.connection.impl;
 
 import org.bantsu.devdatasource.api.configuration.SerialPortConfig;
 import org.bantsu.devdatasource.api.configuration.TCPConfig;
 import org.bantsu.devdatasource.api.connection.IDevConnection;
 import org.bantsu.devdatasource.api.connection.IDevConnectionBuilder;
-import org.bantsu.devdatasource.devsim.utils.NetUtils;
+import org.bantsu.devdatasource.api.utils.NetUtils;
 
-import javax.sound.sampled.Port;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,9 +15,12 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
     private final Map<String, DevConnectionTCP> connectionPoolTCP;
     private final Map<String, DevConnectionSerial> connectionPoolSerial;
 
-    public DevConnectionBuilder() {
+    private String operatorClassName = null;
+
+    public DevConnectionBuilder(String operatorClassName) {
         this.connectionPoolTCP = new HashMap<>();
         this.connectionPoolSerial = new HashMap<>();
+        this.operatorClassName = operatorClassName;
 
     }
 
@@ -29,7 +31,7 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
             if(NetUtils.isValidConnection(host, port)){
                 DevConnectionTCP connectionCache = connectionPoolTCP.get(host);
                 if(connectionCache == null){
-                    DevConnectionTCP connection = new DevConnectionTCP(host, port);
+                    DevConnectionTCP connection = new DevConnectionTCP(host, port, this.operatorClassName + ".operator.OperatorTCP");
                     connectionPoolTCP.put(host, connection);
                     return connection;
                 }else{
@@ -44,9 +46,8 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
     }
 
 
-
     @Override
     public IDevConnection buildSerialConnection(SerialPortConfig serialPortConfig) throws Exception {
-        return null;
+        return new DevConnectionSerial(serialPortConfig.getPort(), this.operatorClassName + ".operator.OperatorSerial");
     }
 }
