@@ -19,6 +19,7 @@ public class DefaultDevDataSource implements IDevDataSource {
         this.serialPortConfig = serialPortConfig;
         this.operatorClassName = operatorClassName;
         this.devConnectionBuilder = new DevConnectionBuilder(operatorClassName);
+        System.out.println("Create DefaultDevDataSource");
     }
 
     @Override

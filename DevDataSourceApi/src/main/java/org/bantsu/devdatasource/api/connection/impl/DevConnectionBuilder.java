@@ -10,6 +10,7 @@ import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+import java.util.zip.CheckedOutputStream;
 
 public class DevConnectionBuilder implements IDevConnectionBuilder {
     private final Map<String, DevConnectionTCP> connectionPoolTCP;
@@ -33,8 +34,10 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
                 if(connectionCache == null){
                     DevConnectionTCP connection = new DevConnectionTCP(host, port, this.operatorClassName + ".operator.OperatorTCP");
                     connectionPoolTCP.put(host, connection);
+                    System.out.println("Create a connection");
                     return connection;
                 }else{
+                    System.out.println("Use a pooled connection");
                     return connectionCache;
                 }
             }else {

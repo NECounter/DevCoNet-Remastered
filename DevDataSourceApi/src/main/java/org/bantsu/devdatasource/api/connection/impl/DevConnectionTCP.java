@@ -35,6 +35,7 @@ public class DevConnectionTCP implements IDevConnection {
             Class operatorClass = Class.forName(this.operatorClassName);
             Constructor constructor = operatorClass.getConstructor(this.getClass());
             this.devParaOperator = (IDevParaOperator)constructor.newInstance(new Object[]{this});
+            System.out.println("Create DevParaOperator");
         }
         return devParaOperator;
     }
