@@ -16,13 +16,13 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
     private final Map<String, DevConnectionTCP> connectionPoolTCP;
     private final Map<String, DevConnectionSerial> connectionPoolSerial;
 
+
     private String operatorClassName = null;
 
     public DevConnectionBuilder(String operatorClassName) {
         this.connectionPoolTCP = new HashMap<>();
         this.connectionPoolSerial = new HashMap<>();
         this.operatorClassName = operatorClassName;
-
     }
 
     public IDevConnection buildTCPConnection(TCPConfig tcpConfig){
@@ -30,15 +30,16 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
         Integer port = tcpConfig.getPort();
         String addr = host + ":" + port;
         if(host != null && port != null){
-            DevConnectionTCP connectionCache = connectionPoolTCP.get(addr);
-            if(connectionCache == null){
-                DevConnectionTCP connection = new DevConnectionTCP(host, port, this.operatorClassName + ".operator.OperatorTCP");
-                connectionPoolTCP.put(addr, connection);
-                System.out.println("Create a TCPConnection, addr: " + addr);
-                return connection;
-            }else {
-                return connectionCache;
+            if(connectionPoolTCP.get(addr) == null) {
+                synchronized (connectionPoolTCP) {
+                    if (connectionPoolTCP.get(addr) == null) {
+                        connectionPoolTCP.put(addr,
+                                new DevConnectionTCP(host, port, this.operatorClassName + ".operator.OperatorTCP"));
+                        System.out.println("Create a TCPConnection, addr: " + addr);
+                    }
+                }
             }
+            return connectionPoolTCP.get(addr);
         }else{
             throw new InvalidParameterException();
         }
@@ -47,6 +48,7 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
 
     @Override
     public IDevConnection buildSerialConnection(SerialPortConfig serialPortConfig) throws Exception {
+        //todo: still a lot of work todo!
         return new DevConnectionSerial(serialPortConfig.getPort(), this.operatorClassName + ".operator.OperatorSerial");
     }
 }

@@ -11,7 +11,7 @@ public class DevConnectionTCP implements IDevConnection {
     private String host = null;
     private Integer port = null;
 
-    private IDevParaOperator devParaOperator = null;
+    private volatile IDevParaOperator devParaOperator = null;
     private String operatorClassName = null;
 
 
@@ -46,10 +46,14 @@ public class DevConnectionTCP implements IDevConnection {
 
     public IDevParaOperator getDevParaOperator() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if (this.devParaOperator == null) {
-            Class operatorClass = Class.forName(this.operatorClassName);
-            Constructor constructor = operatorClass.getConstructor(this.getClass());
-            this.devParaOperator = (IDevParaOperator)constructor.newInstance(new Object[]{this});
-            System.out.println("Create DevParaOperator");
+            synchronized (this){
+                if (this.devParaOperator == null){
+                    Class operatorClass = Class.forName(this.operatorClassName);
+                    Constructor constructor = operatorClass.getConstructor(this.getClass());
+                    this.devParaOperator = (IDevParaOperator)constructor.newInstance(new Object[]{this});
+                    System.out.println("Create DevParaOperatorTCP");
+                }
+            }
         }
         return devParaOperator;
     }

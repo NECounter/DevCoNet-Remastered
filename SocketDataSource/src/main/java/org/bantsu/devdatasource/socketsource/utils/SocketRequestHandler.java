@@ -18,9 +18,7 @@ public class SocketRequestHandler {
         BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
         bufferedWriter.write(cmd);
         bufferedWriter.flush();
-
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-
         return bufferedReader.readLine();
     }
 }

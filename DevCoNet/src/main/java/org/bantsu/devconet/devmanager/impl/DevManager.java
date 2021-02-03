@@ -14,7 +14,6 @@ import org.bantsu.devdatasource.api.operator.IDevParaOperator;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
@@ -28,17 +27,12 @@ public class DevManager implements IDevManager {
     /**
      * A map used to store the configs of parameters.
      */
-    private Map<String, DevParaConfiguration> devParaConfigurationMap = new HashMap<>();
-
-    /**
-     * An AnnotationResolver
-     */
-    private DevParaAnnotationResolver devParaAnnotationResolver = null;
+    private Map<String, DevParaConfiguration> devParaConfigurationMap = new ConcurrentHashMap<>();
 
     /**
      * A map used to store the historical values of a parameter.
      */
-    private ThreadLocal<Map<String, ValueHisPair>> changeBuffer = new ThreadLocal<>();
+    private final ThreadLocal<Map<String, ValueHisPair>> changeBuffer = new ThreadLocal<>();
 
     /**
      * Determines whether the devManager supports the concurrent requests
@@ -53,7 +47,7 @@ public class DevManager implements IDevManager {
     /**
      * A global lock
      */
-    private volatile ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
 
     /**
      * A latch that aviod non-trans job to execute before trans job when using thread pool
@@ -91,14 +85,6 @@ public class DevManager implements IDevManager {
         this.devParaConfigurationMap = devParaConfigurationMap;
     }
 
-    public DevParaAnnotationResolver getDevParaAnnotationResolver() {
-        return devParaAnnotationResolver;
-    }
-
-    public void setDevParaAnnotationResolver(DevParaAnnotationResolver devParaAnnotationResolver) {
-        this.devParaAnnotationResolver = devParaAnnotationResolver;
-    }
-
 
     public ThreadLocal<Map<String, ValueHisPair>> getChangeBuffer() {
         return changeBuffer;
@@ -112,7 +98,7 @@ public class DevManager implements IDevManager {
     //region Public Methods
     @Override
     public Object getEnhancedDevPara(Class c) throws Exception {
-        devParaAnnotationResolver = new DevParaAnnotationResolver(c);
+        DevParaAnnotationResolver devParaAnnotationResolver = new DevParaAnnotationResolver(c);
         mergeConfigMap(devParaAnnotationResolver.getDevParaConfigMap());
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(c);
@@ -120,7 +106,7 @@ public class DevManager implements IDevManager {
     }
 
     /**
-     * Roll back when error occured in a trans
+     * Roll back when error occurred in a trans
      * @throws Exception
      */
     @Override
@@ -150,7 +136,7 @@ public class DevManager implements IDevManager {
         for(Map.Entry<String, ValueHisPair> entry : this.changeBuffer.get().entrySet()){
             DevParaConfiguration configuration = devParaConfigurationMap.get(entry.getKey());
             if(this.useThreadPool){
-                Callable<Object> setTask = new setParamUpdateTask(configuration, entry.getValue().getCurrentValue(),this.latch.get());
+                Callable<Object> setTask = new SetParamUpdateTask(configuration, entry.getValue().getCurrentValue(),this.latch.get());
                 if(configuration.getConnectionType()== ConnectionType.TCP){
                     executorTCP.submit(setTask);
 //                    System.out.println("buffer: executorTCP.submit(setTask)");
@@ -215,13 +201,13 @@ public class DevManager implements IDevManager {
         //Get configuration of this operated parameter
         DevParaConfiguration configuration = devParaConfigurationMap.get(paraNameFull);
 
-        Object result = null;
+        Object result;
         Future<Object> future = null;
 
         if(methodType.equals("get")){
             //Get value from devices
             if(this.useThreadPool){
-                Callable<Object> getTask = new getParamTask(configuration, this.latch.get());
+                Callable<Object> getTask = new GetParamTask(configuration, this.latch.get());
                 if(configuration.getConnectionType()== ConnectionType.TCP) {
 //                    while (!this.executorTCPUpdate.isTerminated()) Thread.sleep(10);
                     future = executorTCP.submit(getTask);
@@ -245,7 +231,7 @@ public class DevManager implements IDevManager {
         }else{
             //Set value to devices
             if(this.useThreadPool){
-            Callable<Object> setTask = new setParamTask(configuration, args[0], this.latch.get());
+            Callable<Object> setTask = new SetParamTask(configuration, args[0], this.latch.get());
                 if(configuration.getConnectionType()== ConnectionType.TCP){
                     future = executorTCP.submit(setTask);
                 }
@@ -285,7 +271,7 @@ public class DevManager implements IDevManager {
                 Future<Object> future = null;
                 DevParaConfiguration configuration = devParaConfigurationMap.get(paraNameFull);
                 if(this.useThreadPool){
-                    Callable<Object> getTask = new getParamTask(configuration, this.latch.get());
+                    Callable<Object> getTask = new GetParamTask(configuration, this.latch.get());
                     if(configuration.getConnectionType()== ConnectionType.TCP){
                         future = executorTCP.submit(getTask);
                     }
@@ -316,7 +302,7 @@ public class DevManager implements IDevManager {
      */
     private void mergeConfigMap(Map<String, DevParaConfiguration> configMap){
         for(Map.Entry<String, DevParaConfiguration> entry : configMap.entrySet()){
-            devParaConfigurationMap.put(entry.getKey(), entry.getValue());
+            this.devParaConfigurationMap.put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -361,11 +347,11 @@ public class DevManager implements IDevManager {
     //endregion
 
     //region Inner Classes
-    class getParamTask implements Callable<Object> {
+    class GetParamTask implements Callable<Object> {
         protected DevParaConfiguration configuration = null;
         protected CountDownLatch latch = null;
 
-        public getParamTask(DevParaConfiguration configuration, CountDownLatch latch) {
+        public GetParamTask(DevParaConfiguration configuration, CountDownLatch latch) {
             this.configuration = configuration;
             this.latch = latch;
         }
@@ -378,9 +364,9 @@ public class DevManager implements IDevManager {
         }
     }
 
-    class getParamUpdateTask extends getParamTask{
+    class GetParamUpdateTask extends GetParamTask {
 
-        public getParamUpdateTask(DevParaConfiguration configuration, CountDownLatch latch) {
+        public GetParamUpdateTask(DevParaConfiguration configuration, CountDownLatch latch) {
             super(configuration, latch);
         }
 
@@ -392,12 +378,12 @@ public class DevManager implements IDevManager {
         }
     }
 
-    class setParamTask implements Callable<Object> {
+    class SetParamTask implements Callable<Object> {
         protected DevParaConfiguration configuration = null;
         protected Object value = null;
         protected CountDownLatch latch = null;
 
-        public setParamTask(DevParaConfiguration configuration, Object value, CountDownLatch latch) {
+        public SetParamTask(DevParaConfiguration configuration, Object value, CountDownLatch latch) {
             this.configuration = configuration;
             this.value = value;
             this.latch = latch;
@@ -411,9 +397,9 @@ public class DevManager implements IDevManager {
         }
     }
 
-    class setParamUpdateTask extends setParamTask{
+    class SetParamUpdateTask extends SetParamTask {
 
-        public setParamUpdateTask(DevParaConfiguration configuration, Object value, CountDownLatch latch) {
+        public SetParamUpdateTask(DevParaConfiguration configuration, Object value, CountDownLatch latch) {
             super(configuration, value, latch);
         }
 

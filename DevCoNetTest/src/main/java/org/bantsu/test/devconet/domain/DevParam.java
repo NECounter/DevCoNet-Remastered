@@ -6,6 +6,7 @@ import org.bantsu.devconet.anno.annos.datasourceconfig.DevDataSource;
 import org.bantsu.devconet.anno.annos.datasourceconfig.DevDataSources;
 import org.bantsu.devconet.anno.annos.datasourceconfig.SerialPortConfig;
 import org.bantsu.devconet.anno.annos.datasourceconfig.TCPConfig;
+import org.bantsu.devdatasource.api.configuration.ConnectionType;
 
 import java.io.Serializable;
 
