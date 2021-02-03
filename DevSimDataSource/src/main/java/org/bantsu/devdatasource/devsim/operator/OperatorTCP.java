@@ -2,7 +2,7 @@ package org.bantsu.devdatasource.devsim.operator;
 
 import org.bantsu.devdatasource.api.connection.impl.DevConnectionTCP;
 import org.bantsu.devdatasource.api.operator.IDevParaOperator;
-import org.bantsu.devdatasource.devsim.utils.NetUtils;
+import org.bantsu.devdatasource.devsim.utils.HttpUtils;
 
 import java.io.IOException;
 
@@ -32,7 +32,7 @@ public class OperatorTCP implements IDevParaOperator {
                 "offset=" + offset + "&" +
                 "bitOffset=" + bitOffset;
 
-        return Boolean.valueOf(NetUtils.sendGet(url, param,null));
+        return Boolean.valueOf(HttpUtils.sendGet(url, param,null));
     }
 
     @Override
@@ -42,7 +42,7 @@ public class OperatorTCP implements IDevParaOperator {
                 "offset=" + offset + "&" +
                 "value=" + value + "&" +
                 "bitOffset=" + bitOffset;
-        return Boolean.valueOf(NetUtils.sendGet(url, param,null));
+        return Boolean.valueOf(HttpUtils.sendGet(url, param,null));
     }
 
     @Override
@@ -50,7 +50,7 @@ public class OperatorTCP implements IDevParaOperator {
         String url = this.url + "getByte";
         String param = "slot=" + slot + "&" +
                 "offset=" + offset;
-        return Byte.valueOf(NetUtils.sendGet(url, param,null));
+        return Byte.valueOf(HttpUtils.sendGet(url, param,null));
     }
 
     @Override
@@ -59,7 +59,7 @@ public class OperatorTCP implements IDevParaOperator {
         String param = "slot=" + slot + "&" +
                 "offset=" + offset + "&" +
                 "value=" + value;
-        return Boolean.valueOf(NetUtils.sendGet(url, param,null));
+        return Boolean.valueOf(HttpUtils.sendGet(url, param,null));
     }
 
     @Override
@@ -68,7 +68,7 @@ public class OperatorTCP implements IDevParaOperator {
         String url = this.url + "getDWord";
         String param = "slot=" + slot + "&" +
                 "offset=" + offset + "&";
-        return Integer.valueOf(NetUtils.sendGet(url, param,null));
+        return Integer.valueOf(HttpUtils.sendGet(url, param,null));
     }
 
     @Override
@@ -77,7 +77,7 @@ public class OperatorTCP implements IDevParaOperator {
         String param = "slot=" + slot + "&" +
                 "offset=" + offset + "&" +
                 "value=" + value;
-        return Boolean.valueOf(NetUtils.sendGet(url, param,null));
+        return Boolean.valueOf(HttpUtils.sendGet(url, param,null));
     }
 
     @Override
@@ -86,7 +86,7 @@ public class OperatorTCP implements IDevParaOperator {
         String url = this.url + "getFloat";
         String param = "slot=" + slot + "&" +
                 "offset=" + offset;
-        return Float.valueOf(NetUtils.sendGet(url, param,null));
+        return Float.valueOf(HttpUtils.sendGet(url, param,null));
     }
 
     @Override
@@ -95,6 +95,6 @@ public class OperatorTCP implements IDevParaOperator {
         String param = "slot=" + slot + "&" +
                 "offset=" + offset + "&" +
                 "value=" + value;
-        return Boolean.valueOf(NetUtils.sendGet(url, param,null));
+        return Boolean.valueOf(HttpUtils.sendGet(url, param,null));
     }
 }

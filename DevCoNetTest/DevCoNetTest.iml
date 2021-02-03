@@ -14,5 +14,6 @@
     <orderEntry type="library" name="Maven: org.ow2.asm:asm:7.1" level="project" />
     <orderEntry type="module" module-name="DevDataSourceApi" />
     <orderEntry type="module" module-name="DevSimDataSource" />
+    <orderEntry type="module" module-name="SocketDataSource" />
   </component>
 </module>

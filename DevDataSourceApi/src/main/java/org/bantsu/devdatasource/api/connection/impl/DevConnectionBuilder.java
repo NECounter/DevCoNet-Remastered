@@ -10,6 +10,7 @@ import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+import java.util.zip.CheckedOutputStream;
 
 public class DevConnectionBuilder implements IDevConnectionBuilder {
     private final Map<String, DevConnectionTCP> connectionPoolTCP;
@@ -24,21 +25,19 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
 
     }
 
-    public IDevConnection buildTCPConnection(TCPConfig tcpConfig) throws Exception {
+    public IDevConnection buildTCPConnection(TCPConfig tcpConfig){
         String host = tcpConfig.getIp();
         Integer port = tcpConfig.getPort();
+        String addr = host + ":" + port;
         if(host != null && port != null){
-            if(NetUtils.isValidConnection(host, port)){
-                DevConnectionTCP connectionCache = connectionPoolTCP.get(host);
-                if(connectionCache == null){
-                    DevConnectionTCP connection = new DevConnectionTCP(host, port, this.operatorClassName + ".operator.OperatorTCP");
-                    connectionPoolTCP.put(host, connection);
-                    return connection;
-                }else{
-                    return connectionCache;
-                }
-            }else {
-                throw new TimeoutException();
+            DevConnectionTCP connectionCache = connectionPoolTCP.get(addr);
+            if(connectionCache == null){
+                DevConnectionTCP connection = new DevConnectionTCP(host, port, this.operatorClassName + ".operator.OperatorTCP");
+                connectionPoolTCP.put(addr, connection);
+                System.out.println("Create a TCPConnection, addr: " + addr);
+                return connection;
+            }else{
+                return connectionCache;
             }
         }else{
             throw new InvalidParameterException();

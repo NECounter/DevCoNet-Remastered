@@ -76,6 +76,7 @@ public class DevParaAnnotationResolver implements IAnnotationResolver {
 //            Constructor constructor = dataSourceClass.getConstructor(TCPConfig.class, SerialPortConfig.class);
 //            IDevDataSource dataSource = (IDevDataSource) constructor.newInstance(new Object[]{tcpConfig, serialPortConfig});
             IDevDataSource dataSource = new DefaultDevDataSource(tcpConfig, serialPortConfig, sourceClassName);
+            System.out.println("Create DefaultDevDataSource, Name: "+ dataSourceName);
             //Put pair<name, dataSource> into map
             devDataSourcesMap.put(dataSourceName, dataSource);
             }
