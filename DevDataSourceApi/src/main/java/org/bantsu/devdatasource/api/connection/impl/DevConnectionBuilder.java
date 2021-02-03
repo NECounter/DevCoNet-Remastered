@@ -36,7 +36,7 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
                 connectionPoolTCP.put(addr, connection);
                 System.out.println("Create a TCPConnection, addr: " + addr);
                 return connection;
-            }else{
+            }else {
                 return connectionCache;
             }
         }else{

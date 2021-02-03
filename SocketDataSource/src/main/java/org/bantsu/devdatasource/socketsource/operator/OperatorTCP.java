@@ -1,11 +1,13 @@
 package org.bantsu.devdatasource.socketsource.operator;
 
+
 import org.bantsu.devdatasource.api.connection.impl.DevConnectionTCP;
 import org.bantsu.devdatasource.api.operator.IDevParaOperator;
 import org.bantsu.devdatasource.socketsource.utils.SocketRequestHandler;
 
 import java.io.IOException;
 import java.util.Random;
+
 
 public class OperatorTCP implements IDevParaOperator {
 
@@ -19,7 +21,6 @@ public class OperatorTCP implements IDevParaOperator {
         }
         this.srh = (SocketRequestHandler)this.connection.getTCPConnection();
     }
-
 
     @Override
     public Boolean getBit(String slot, int offset, int bitOffset) throws IOException {
