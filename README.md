@@ -208,7 +208,8 @@ public class OperatorTCP implements IDevParaOperator {
 	// (Must) A constructor with one parameter
     public OperatorTCP(DevConnectionTCP connection) throws IOException {
         this.connection = connection;
-        //It is recommended that to maintain a long connection to the device in the Operator and assign it to a it's connetion using `this.connection.setTCPConnection(xxx)`
+        //It is recommended that to maintain a long connection to the device in the Operator 
+        //and assign it to a it's connetion using `this.connection.setTCPConnection(xxx)`
         if (this.connection.getTCPConnection() == null){
             this.connection.setTCPConnection(new SocketRequestHandler(this.connection.getHost(),this.connection.getPort()));
         }
