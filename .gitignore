@@ -24,5 +24,5 @@ hs_err_pid*
 
 .idea/*
 
-DevSim/
-DevSimDataSource/
+/DevSim
+/DevSimDataSource
