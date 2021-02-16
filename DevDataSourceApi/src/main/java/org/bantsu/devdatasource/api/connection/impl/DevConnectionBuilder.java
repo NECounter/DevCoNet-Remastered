@@ -34,7 +34,7 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
                 synchronized (connectionPoolTCP) {
                     if (connectionPoolTCP.get(addr) == null) {
                         connectionPoolTCP.put(addr,
-                                new DevConnectionTCP(host, port, this.operatorClassName + ".operator.OperatorTCP"));
+                                new DevConnectionTCP(host, port, this.operatorClassName));
                         System.out.println("Create a TCPConnection, addr: " + addr);
                     }
                 }
@@ -49,6 +49,6 @@ public class DevConnectionBuilder implements IDevConnectionBuilder {
     @Override
     public IDevConnection buildSerialConnection(SerialPortConfig serialPortConfig) throws Exception {
         //todo: still a lot of work todo!
-        return new DevConnectionSerial(serialPortConfig.getPort(), this.operatorClassName + ".operator.OperatorSerial");
+        return new DevConnectionSerial(serialPortConfig.getPort(), this.operatorClassName );
     }
 }

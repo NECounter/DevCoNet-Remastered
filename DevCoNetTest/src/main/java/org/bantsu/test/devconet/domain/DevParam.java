@@ -1,12 +1,11 @@
 package org.bantsu.test.devconet.domain;
 
-import org.bantsu.devconet.anno.annos.DevPoJo;
-import org.bantsu.devconet.anno.annos.DevSource;
-import org.bantsu.devconet.anno.annos.datasourceconfig.DevDataSource;
-import org.bantsu.devconet.anno.annos.datasourceconfig.DevDataSources;
-import org.bantsu.devconet.anno.annos.datasourceconfig.SerialPortConfig;
-import org.bantsu.devconet.anno.annos.datasourceconfig.TCPConfig;
-import org.bantsu.devdatasource.api.configuration.ConnectionType;
+import org.bantsu.devdatasource.api.anno.annos.DevPoJo;
+import org.bantsu.devdatasource.api.anno.annos.DevSource;
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.DevDataSource;
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.DevDataSources;
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.SerialPortConfig;
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.TCPConfig;
 
 import java.io.Serializable;
 

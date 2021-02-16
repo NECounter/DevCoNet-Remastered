@@ -1,7 +1,6 @@
-package org.bantsu.devconet.anno.resolver;
+package org.bantsu.devdatasource.api.anno.resolver;
 
-import org.bantsu.devconet.configuration.DevParaConfiguration;
-import org.bantsu.devdatasource.api.datasource.IDevDataSource;
+import org.bantsu.devdatasource.api.configuration.DevParaConfiguration;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;

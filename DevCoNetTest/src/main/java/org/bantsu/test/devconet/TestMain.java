@@ -15,15 +15,14 @@ public class TestMain {
         DevParam devParam = (DevParam) devManager.getEnhancedDevPara(DevParam.class);
         int i=0;
         long timeStart = System.currentTimeMillis();
-        while (i<100){
-            devParam.setM0_0(true);
-            System.out.println(devParam.getM0_0());
-            devParam.setMD04(520);
-            System.out.println(devParam.getMD04());
-            devParam.setMD08f(3.14f);
-            System.out.println(devParam.getMD08f());
-            i++;
-        }
+
+        devParam.setM0_0(true);
+        System.out.println(devParam.getM0_0());
+        devParam.setMD04(520);
+        System.out.println(devParam.getMD04());
+        devParam.setMD08f(3.14f);
+        System.out.println(devParam.getMD08f());
+
         System.out.println(System.currentTimeMillis() - timeStart);
         devManager.dispose();
 

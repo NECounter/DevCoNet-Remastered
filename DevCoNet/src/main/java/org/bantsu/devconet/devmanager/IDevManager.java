@@ -1,9 +1,5 @@
 package org.bantsu.devconet.devmanager;
 
-import org.bantsu.devconet.configuration.ValueHisPair;
-
-import java.util.Map;
-
 /**
  * An interface of the DevManager
  * @param <T>

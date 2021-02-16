@@ -1,4 +1,4 @@
-package org.bantsu.devconet.configuration;
+package org.bantsu.devdatasource.api.configuration;
 
 /**
  * A data type that stores the history value of an object

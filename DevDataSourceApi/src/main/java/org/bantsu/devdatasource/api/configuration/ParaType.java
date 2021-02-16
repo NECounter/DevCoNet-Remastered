@@ -1,4 +1,4 @@
-package org.bantsu.devconet.configuration;
+package org.bantsu.devdatasource.api.configuration;
 
 /**
  * An enum of parameter types

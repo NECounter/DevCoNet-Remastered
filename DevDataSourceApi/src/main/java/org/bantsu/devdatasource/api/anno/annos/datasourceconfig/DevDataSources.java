@@ -1,4 +1,4 @@
-package org.bantsu.devconet.anno.annos;
+package org.bantsu.devdatasource.api.anno.annos.datasourceconfig;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,14 +6,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Make a POJO as the device parameter POJO.
+ * A combination annotation of DevDataSource
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface DevPoJo {
+public @interface DevDataSources {
     /**
-     * The alias of this POJO
+     * A collection of DevDataSources
      * @return
      */
-    String value();
+    DevDataSource[] DEV_DATA_SOURCE();
 }

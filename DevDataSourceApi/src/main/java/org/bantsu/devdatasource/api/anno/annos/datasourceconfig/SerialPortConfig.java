@@ -1,4 +1,4 @@
-package org.bantsu.devconet.anno.annos.datasourceconfig;
+package org.bantsu.devdatasource.api.anno.annos.datasourceconfig;
 
 import org.bantsu.devdatasource.api.configuration.VerifyMode;
 

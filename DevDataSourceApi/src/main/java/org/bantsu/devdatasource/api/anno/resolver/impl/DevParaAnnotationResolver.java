@@ -1,11 +1,11 @@
-package org.bantsu.devconet.anno.resolver.impl;
+package org.bantsu.devdatasource.api.anno.resolver.impl;
 
-import org.bantsu.devconet.anno.annos.DevSource;
-import org.bantsu.devconet.anno.annos.datasourceconfig.DevDataSource;
-import org.bantsu.devconet.anno.annos.datasourceconfig.DevDataSources;
-import org.bantsu.devconet.anno.resolver.IAnnotationResolver;
-import org.bantsu.devconet.configuration.DevParaConfiguration;
-import org.bantsu.devconet.configuration.ParaType;
+import org.bantsu.devdatasource.api.anno.annos.DevSource;
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.DevDataSource;
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.DevDataSources;
+import org.bantsu.devdatasource.api.anno.resolver.IAnnotationResolver;
+import org.bantsu.devdatasource.api.configuration.DevParaConfiguration;
+import org.bantsu.devdatasource.api.configuration.ParaType;
 import org.bantsu.devdatasource.api.configuration.SerialPortConfig;
 import org.bantsu.devdatasource.api.configuration.TCPConfig;
 import org.bantsu.devdatasource.api.datasource.IDevDataSource;

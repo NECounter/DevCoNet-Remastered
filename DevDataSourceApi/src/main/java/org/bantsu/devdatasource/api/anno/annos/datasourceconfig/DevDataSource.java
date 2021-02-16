@@ -1,9 +1,7 @@
-package org.bantsu.devconet.anno.annos.datasourceconfig;
+package org.bantsu.devdatasource.api.anno.annos.datasourceconfig;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 /**
  * Config of a data source

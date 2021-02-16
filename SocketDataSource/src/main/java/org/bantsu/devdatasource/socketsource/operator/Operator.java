@@ -1,20 +1,21 @@
 package org.bantsu.devdatasource.socketsource.operator;
 
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.DevConnectionType;
+import org.bantsu.devdatasource.api.configuration.ConnectionType;
 import org.bantsu.devdatasource.api.connection.impl.DevConnectionTCP;
 import org.bantsu.devdatasource.api.operator.IDevParaOperator;
 import org.bantsu.devdatasource.socketsource.utils.SocketRequestHandler;
 import java.io.IOException;
 
-public class OperatorTCP implements IDevParaOperator {
-    private DevConnectionTCP connection = null;
+@DevConnectionType(connectionType=ConnectionType.TCP)
+public class Operator implements IDevParaOperator {
     private SocketRequestHandler srh = null;
 
-    public OperatorTCP(DevConnectionTCP connection) throws IOException {
-        this.connection = connection;
-        if (this.connection.getTCPConnection() == null){
-            this.connection.setTCPConnection(new SocketRequestHandler(this.connection.getHost(),this.connection.getPort()));
+    public Operator(DevConnectionTCP connection) throws IOException {
+        if (connection.getTCPConnection() == null){
+            connection.setTCPConnection(new SocketRequestHandler(connection.getHost(), connection.getPort()));
         }
-        this.srh = (SocketRequestHandler)this.connection.getTCPConnection();
+        this.srh = (SocketRequestHandler) connection.getTCPConnection();
     }
 
     @Override
@@ -56,6 +57,7 @@ public class OperatorTCP implements IDevParaOperator {
     @Override
     public Float getFloat(String slot, int offset) throws IOException {
         String cmd = "getf,"+offset;
+
         return Float.parseFloat(this.request(cmd).trim());
     }
 
@@ -66,6 +68,6 @@ public class OperatorTCP implements IDevParaOperator {
     }
 
     private String request(String cmd) throws IOException {
-        return this.srh.request(cmd);
+        return this.srh.request(cmd+"\n");
     }
 }

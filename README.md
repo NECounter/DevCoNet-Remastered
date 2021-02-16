@@ -82,12 +82,12 @@ They are all maven projects, so you can either import them to your existing proj
 ```java
 package org.bantsu.test.devconet.domain;
 
-import org.bantsu.devconet.anno.annos.DevPoJo;
-import org.bantsu.devconet.anno.annos.DevSource;
-import org.bantsu.devconet.anno.annos.datasourceconfig.DevDataSource;
-import org.bantsu.devconet.anno.annos.datasourceconfig.DevDataSources;
-import org.bantsu.devconet.anno.annos.datasourceconfig.SerialPortConfig;
-import org.bantsu.devconet.anno.annos.datasourceconfig.TCPConfig;
+import org.bantsu.devdatasource.api.anno.annos.DevPoJo;
+import org.bantsu.devdatasource.api.anno.annos.DevSource;
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.DevDataSource;
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.DevDataSources;
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.SerialPortConfig;
+import org.bantsu.devdatasource.api.anno.annos.datasourceconfig.TCPConfig;
 import org.bantsu.devdatasource.api.configuration.ConnectionType;
 
 import java.io.Serializable;
@@ -95,9 +95,9 @@ import java.io.Serializable;
 @DevPoJo("devParam")
 @DevDataSources(DEV_DATA_SOURCE = {
         @DevDataSource(name = "devSim", sourcePackageName = "org.bantsu.devdatasource.devsim",
-        TCP_CONFIG = @TCPConfig(ip = "127.0.0.1", port = 8080), SERIAL_PORT_CONFIG = @SerialPortConfig()),
+                TCP_CONFIG = @TCPConfig(ip = "127.0.0.1", port = 8080), SERIAL_PORT_CONFIG = @SerialPortConfig()),
         @DevDataSource(name = "socketSource", sourcePackageName = "org.bantsu.devdatasource.socketsource",
-        TCP_CONFIG = @TCPConfig(ip = "192.168.3.50", port = 8000), SERIAL_PORT_CONFIG = @SerialPortConfig())
+                TCP_CONFIG = @TCPConfig(ip = "192.168.3.50", port = 8000), SERIAL_PORT_CONFIG = @SerialPortConfig())
 })
 public class DevParam implements Serializable {
 
@@ -114,21 +114,37 @@ public class DevParam implements Serializable {
     private Float MD08f;
 
 
-    public Boolean getM0_0() {return M0_0;}
+    public Boolean getM0_0() {
+        return M0_0;
+    }
 
-    public void setM0_0(Boolean m0_0) {M0_0 = m0_0;}
+    public void setM0_0(Boolean m0_0) {
+        M0_0 = m0_0;
+    }
 
-    public Byte getMB01() {return MB01;}
+    public Byte getMB01() {
+        return MB01;
+    }
 
-    public void setMB01(Byte MB01) {this.MB01 = MB01;}
+    public void setMB01(Byte MB01) {
+        this.MB01 = MB01;
+    }
 
-    public Integer getMD04() {return MD04;}
+    public Integer getMD04() {
+        return MD04;
+    }
 
-    public void setMD04(Integer MD04) {this.MD04 = MD04;}
+    public void setMD04(Integer MD04) {
+        this.MD04 = MD04;
+    }
 
-    public Float getMD08f() {return MD08f;}
+    public Float getMD08f() {
+        return MD08f;
+    }
 
-    public void setMD08f(Float MD08f) { this.MD08f = MD08f;}
+    public void setMD08f(Float MD08f) {
+        this.MD08f = MD08f;
+    }
 
 }
 ```
@@ -189,7 +205,7 @@ transactionManager.doTransaction();
 `datasource` defines the fundamental interacting patterns with devices, should be implemented **before use**.
 The impls should be put into the package named `*.operator`, in which `*` refer to the **full package name** of your datasource.
 
-Two implements should be carried out, and must exactly follow the name `OperatorTCP` and `OperatorSerial` when using TCP and Serial respectively. Each of which should contain the constructor with one specific type of parameter, which is the type of DevConnectionTCP and DevConnectionSerial respectively.
+Implementation of IOperator should be named as `Operator`. Use annotation `@DevConnectionType` to indicate whether it's TCP or Serial. Each of which should contain the constructor with one specific type of parameter, which is the type of DevConnectionTCP and DevConnectionSerial respectively.
 
 A typical impl is as follows:
 ```java
@@ -201,12 +217,13 @@ import org.bantsu.devdatasource.api.operator.IDevParaOperator;
 import org.bantsu.devdatasource.socketsource.utils.SocketRequestHandler;
 import java.io.IOException;
 
-public class OperatorTCP implements IDevParaOperator {
+@DevConnectionType(connectionType=ConnectionType.TCP)
+public class Operator implements IDevParaOperator {
     private DevConnectionTCP connection = null;
     private SocketRequestHandler srh = null;
     
 	// (Must) A constructor with one parameter
-    public OperatorTCP(DevConnectionTCP connection) throws IOException {
+    public Operator(DevConnectionTCP connection) throws IOException {
         this.connection = connection;
         //It is recommended that to maintain a long connection to the device in the Operator 
         //and assign it to a it's connetion using `this.connection.setTCPConnection(xxx)`
@@ -262,7 +279,7 @@ public class OperatorTCP implements IDevParaOperator {
     @Override
     public Boolean setFloat(String slot, int offset, float value) throws IOException {
         String cmd = "setf,"+offset+","+value;
-        return Boolean.parseBoolean(this.srh.request(cmd));
+        return Boolean.parseBoolean(this.srh.request(cmd + "\n"));
     }
 }
 ```

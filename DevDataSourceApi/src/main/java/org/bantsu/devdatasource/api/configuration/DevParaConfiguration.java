@@ -1,6 +1,5 @@
-package org.bantsu.devconet.configuration;
+package org.bantsu.devdatasource.api.configuration;
 
-import org.bantsu.devdatasource.api.configuration.ConnectionType;
 import org.bantsu.devdatasource.api.datasource.IDevDataSource;
 
 /**
