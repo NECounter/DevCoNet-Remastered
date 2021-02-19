@@ -35,6 +35,11 @@ public class DevManager implements IDevManager {
     private final ThreadLocal<Map<String, ValueHisPair>> changeBuffer = new ThreadLocal<>();
 
     /**
+     * A indicator shows whether the cmd in transaction for each thread
+     */
+    private final ThreadLocal<Boolean> inTransIndicator = new ThreadLocal<>();
+
+    /**
      * Determines whether the devManager supports the concurrent requests
      */
     private Boolean useThreadPool = false;
@@ -52,7 +57,7 @@ public class DevManager implements IDevManager {
     /**
      * A latch that aviod non-trans job to execute before trans job when using thread pool
      */
-    private volatile ThreadLocal<CountDownLatch> latch;
+    private final ThreadLocal<CountDownLatch> latch =  new ThreadLocal<>();
     //endregion
 
     //region Constructors
@@ -71,8 +76,6 @@ public class DevManager implements IDevManager {
         this.useThreadPool = true;
         this.executorTCP = Executors.newFixedThreadPool(coreSize);
         this.executorSerial = Executors.newSingleThreadExecutor();
-        this.latch = new ThreadLocal<>();
-        this.latch.set(new CountDownLatch(0));
     }
     //endregion
 
@@ -92,6 +95,23 @@ public class DevManager implements IDevManager {
 
     public void setChangeBuffer(Map<String, ValueHisPair> changeBuffer) {
         this.changeBuffer.set(changeBuffer);
+    }
+
+
+    public ThreadLocal<Boolean> getInTransIndicator(){
+        return this.inTransIndicator;
+    }
+
+    public void setInTransIndicator(Boolean in){
+        this.inTransIndicator.set(in);
+    }
+
+    public ThreadLocal<CountDownLatch> getLatch(){
+        return this.latch;
+    }
+
+    public void setLatch(CountDownLatch latch){
+        this.latch.set(latch);
     }
     //endregion
 
@@ -120,8 +140,8 @@ public class DevManager implements IDevManager {
             field.setAccessible(true);
             field.set(obj, entry.getValue().getFormerValue());
         }
-        this.changeBuffer.get().clear();
-        this.changeBuffer.remove();
+        //this.changeBuffer.get().clear();
+        //this.changeBuffer.remove();
     }
 
 
@@ -131,26 +151,28 @@ public class DevManager implements IDevManager {
      */
     @Override
     public void updateChangeBuffer() throws Exception {
-        this.latch.remove();
         this.latch.set(new CountDownLatch(this.changeBuffer.get().size()));
         for(Map.Entry<String, ValueHisPair> entry : this.changeBuffer.get().entrySet()){
             DevParaConfiguration configuration = devParaConfigurationMap.get(entry.getKey());
             if(this.useThreadPool){
                 Callable<Object> setTask = new SetParamUpdateTask(configuration, entry.getValue().getCurrentValue(),this.latch.get());
+                Future<Object> future = null;
                 if(configuration.getConnectionType()== ConnectionType.TCP){
-                    executorTCP.submit(setTask);
+                    future = executorTCP.submit(setTask);
 //                    System.out.println("buffer: executorTCP.submit(setTask)");
                 }
                 if(configuration.getConnectionType()== ConnectionType.Serial){
-                    executorSerial.submit(setTask);
+                    future = executorSerial.submit(setTask);
                 }
+                assert future != null;
+                future.get();
             }else{
                 this.setParam(configuration, entry.getValue().getCurrentValue());
             }
 
         }
-        this.changeBuffer.get().clear();
-        this.changeBuffer.remove();
+        //this.changeBuffer.get().clear();
+        //this.changeBuffer.remove();
     }
 
     @Override
@@ -170,10 +192,14 @@ public class DevManager implements IDevManager {
      * @return enhancer with specific callback
      */
     private Enhancer devParaProxy(Enhancer enhancer){
+        if (this.inTransIndicator.get() == null){
+            this.inTransIndicator.set(false);
+        }
         enhancer.setCallback((MethodInterceptor) (obj, method, args, proxy) -> {
             //Check the StackTrace to determine whether this call is a call with transaction
-           if(Arrays.stream(Thread.currentThread().getStackTrace()).anyMatch(
-                    stackTraceElement -> stackTraceElement.getMethodName().equals("doCommitTransactionJob"))){
+//           if(Arrays.stream(Thread.currentThread().getStackTrace()).anyMatch(
+//                    stackTraceElement -> stackTraceElement.getMethodName().equals("doCommitTransactionJob"))){
+            if (this.inTransIndicator.get()){
                // Do with transaction
                 return this.devParaOperationWithTrans(obj, method, args, proxy);
             }else{
@@ -202,11 +228,15 @@ public class DevManager implements IDevManager {
         DevParaConfiguration configuration = devParaConfigurationMap.get(paraNameFull);
 
         Object result;
-        Future<Object> future = null;
+
 
         if(methodType.equals("get")){
             //Get value from devices
             if(this.useThreadPool){
+                Future<Object> future = null;
+                if (this.latch.get() == null){
+                    this.latch.set(new CountDownLatch(0));
+                }
                 Callable<Object> getTask = new GetParamTask(configuration, this.latch.get());
                 if(configuration.getConnectionType()== ConnectionType.TCP) {
 //                    while (!this.executorTCPUpdate.isTerminated()) Thread.sleep(10);
@@ -231,7 +261,11 @@ public class DevManager implements IDevManager {
         }else{
             //Set value to devices
             if(this.useThreadPool){
-            Callable<Object> setTask = new SetParamTask(configuration, args[0], this.latch.get());
+                Future<Object> future = null;
+                if (this.latch.get() == null){
+                    this.latch.set(new CountDownLatch(0));
+                }
+                Callable<Object> setTask = new SetParamTask(configuration, args[0], this.latch.get());
                 if(configuration.getConnectionType()== ConnectionType.TCP){
                     future = executorTCP.submit(setTask);
                 }
@@ -271,6 +305,9 @@ public class DevManager implements IDevManager {
                 Future<Object> future = null;
                 DevParaConfiguration configuration = devParaConfigurationMap.get(paraNameFull);
                 if(this.useThreadPool){
+                    if (this.latch.get() == null){
+                        this.latch.set(new CountDownLatch(0));
+                    }
                     Callable<Object> getTask = new GetParamTask(configuration, this.latch.get());
                     if(configuration.getConnectionType()== ConnectionType.TCP){
                         future = executorTCP.submit(getTask);

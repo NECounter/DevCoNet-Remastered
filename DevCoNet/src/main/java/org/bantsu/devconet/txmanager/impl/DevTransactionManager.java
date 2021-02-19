@@ -4,6 +4,7 @@ import org.bantsu.devconet.devmanager.impl.DevManager;
 import org.bantsu.devconet.txmanager.IDevTransactionManager;
 
 import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
 
 public class DevTransactionManager implements IDevTransactionManager {
 
@@ -16,6 +17,10 @@ public class DevTransactionManager implements IDevTransactionManager {
 
     public DevTransactionManager(DevManager devManager) {
         this.devManager = devManager;
+        if (this.devManager.getChangeBuffer().get() == null){
+            this.devManager.setChangeBuffer(new HashMap<>());
+        }
+        this.devManager.setInTransIndicator(false);
     }
 
 
@@ -27,21 +32,21 @@ public class DevTransactionManager implements IDevTransactionManager {
     @Override
     public void doTransaction() throws Exception {
         try {
-            //One changeBuffer for one Thread
-            devManager.setChangeBuffer(new HashMap<>());
+            // One changeBuffer for one Thread
+            this.devManager.getChangeBuffer().get().clear();
+            // Tell devManager the trans begins
+            this.devManager.setInTransIndicator(true);
             // Before advice
             this.doCommitTransactionJob();
+            // After advice
+            this.doCommit();
         }catch (Exception e){
             // Exception advice
             this.doException(e);
-            return;
         }finally {
             // Final advice
             this.doFinally();
         }
-        // After advice
-        this.doCommit();
-
     }
 
 
@@ -56,6 +61,7 @@ public class DevTransactionManager implements IDevTransactionManager {
      * Exception advice
      */
     private void doException(Exception e) throws Exception {
+        System.out.println(e.getMessage());
         //rollback
         this.devManager.rollbackChangeBuffer();
     }
@@ -64,7 +70,9 @@ public class DevTransactionManager implements IDevTransactionManager {
      * Final advice
      */
     private void doFinally(){
-
+        this.devManager.getChangeBuffer().get().clear();
+        this.devManager.setLatch(new CountDownLatch(0));
+        this.devManager.setInTransIndicator(false);
     }
 
     /**

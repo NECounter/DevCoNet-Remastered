@@ -189,12 +189,12 @@ DevTransactionManager transactionManager =
     //override devTransaction() with your codes
     @Override
     public void devTransaction() {
-        int result = devParam.getMD04();
-        rusult -= 100;
-        devParam.setMD04(rusult);
+        int res = devParam.getMD04();
+        res -= 100;
+        devParam.setMD04(res);
         //Here comes an error
         int divByZero = 1 / 0;
-        devParam.setM0_0(reult==42);
+        devParam.setM0_0(res==42);
     }
 };
 //start the transaction
