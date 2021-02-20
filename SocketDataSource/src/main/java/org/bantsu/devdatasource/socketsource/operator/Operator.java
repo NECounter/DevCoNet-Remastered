@@ -68,7 +68,7 @@ public class Operator implements IDevParaOperator {
     }
 
     private String request(String cmd) throws IOException {
-        System.out.println(cmd);
+        //System.out.println(cmd);
         return this.srh.request(cmd+"\n");
     }
 }

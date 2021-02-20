@@ -14,7 +14,6 @@ public class TestMain {
         DevManager devManager = (DevManager) devManagerBuilder.buildConcurrentDevManager(10);
 //        DevManager devManager = (DevManager) devManagerBuilder.buildDevManager();
         DevParam devParam = (DevParam) devManager.getEnhancedDevPara(DevParam.class);
-        int i=0;
         long timeStart = System.currentTimeMillis();
 
         devParam.setM0_0(true);
@@ -36,11 +35,9 @@ public class TestMain {
                 }
             };
         //start the transaction
-        transactionManager.doTransaction();
-        System.out.println("1");
-
-        transactionManager.doTransaction();
-        System.out.println("2");
+        for (int i=0; i<10;i++){
+            transactionManager.doTransaction();
+        }
 
         System.out.println(devParam.getM0_0());
         System.out.println(devParam.getMD04());
