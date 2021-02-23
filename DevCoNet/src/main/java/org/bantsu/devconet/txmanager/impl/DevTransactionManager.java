@@ -64,6 +64,7 @@ public class DevTransactionManager implements IDevTransactionManager {
         System.out.println(e.getMessage());
         //rollback
         this.devManager.rollbackChangeBuffer();
+        throw e;
     }
 
     /**
