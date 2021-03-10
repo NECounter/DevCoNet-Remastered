@@ -30,14 +30,20 @@ public class TestMain {
                     res -= 100;
                     devParam.setMD04(res);
                     //Here comes an error
-                    int divByZero = 1 / 0;
+//                    int divByZero = 1 / 0;
                     devParam.setM0_0(res == 42);
                 }
             };
         //start the transaction
-        for (int i=0; i<10;i++){
+        for (int i=0; i<1000;i++){
             try {
-                transactionManager.doTransaction();
+                int res = devParam.getMD04();
+                res -= 100;
+                devParam.setMD04(res);
+                //Here comes an error
+//                    int divByZero = 1 / 0;
+                devParam.setM0_0(res == 42);
+                //transactionManager.doTransaction();
             }catch (Exception e){
                 System.out.println(e.getMessage());
             }

@@ -17,6 +17,7 @@ public class DevTransactionManager implements IDevTransactionManager {
 
     public DevTransactionManager(DevManager devManager) {
         this.devManager = devManager;
+        // init trans related thread local parameters
         if (this.devManager.getChangeBuffer().get() == null){
             this.devManager.setChangeBuffer(new HashMap<>());
         }
@@ -24,11 +25,18 @@ public class DevTransactionManager implements IDevTransactionManager {
     }
 
 
+    /**
+     * Transaction body to be override.
+     */
     @Override
     public void devTransaction() {
-        //Override it to realize transaction
+        //Override it to with your transaction
     }
 
+    /**
+     * A wrapper of transaction
+     * @throws Exception
+     */
     @Override
     public void doTransaction() throws Exception {
         try {

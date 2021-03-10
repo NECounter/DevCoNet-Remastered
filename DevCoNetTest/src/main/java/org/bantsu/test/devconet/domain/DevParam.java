@@ -14,7 +14,7 @@ import java.io.Serializable;
         @DevDataSource(name = "devSim", sourcePackageName = "org.bantsu.devdatasource.devsim",
         TCP_CONFIG = @TCPConfig(ip = "127.0.0.1", port = 8080), SERIAL_PORT_CONFIG = @SerialPortConfig()),
         @DevDataSource(name = "socketSource", sourcePackageName = "org.bantsu.devdatasource.socketsource",
-        TCP_CONFIG = @TCPConfig(ip = "192.168.3.71", port = 8000), SERIAL_PORT_CONFIG = @SerialPortConfig())
+        TCP_CONFIG = @TCPConfig(ip = "192.168.3.50", port = 8000), SERIAL_PORT_CONFIG = @SerialPortConfig())
 })
 public class DevParam implements Serializable {
 
