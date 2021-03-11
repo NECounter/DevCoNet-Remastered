@@ -15,6 +15,12 @@ public class DevTransactionManager implements IDevTransactionManager {
      */
     private DevManager devManager = null;
 
+    /**
+     * A lock share by all DevTransactionManager instances,
+     * to isolate each transactions
+     */
+    static final Object transExecutingLock = new Object();
+
     public DevTransactionManager(DevManager devManager) {
         this.devManager = devManager;
         // init trans related thread local parameters
@@ -39,21 +45,23 @@ public class DevTransactionManager implements IDevTransactionManager {
      */
     @Override
     public void doTransaction() throws Exception {
-        try {
-            // One changeBuffer for one Thread
-            this.devManager.getChangeBuffer().get().clear();
-            // Tell devManager the trans begins
-            this.devManager.setInTransIndicator(true);
-            // Before advice
-            this.doCommitTransactionJob();
-            // After advice
-            this.doCommit();
-        }catch (Exception e){
-            // Exception advice
-            this.doException(e);
-        }finally {
-            // Final advice
-            this.doFinally();
+        synchronized (transExecutingLock){
+            try {
+                // One changeBuffer for one Thread
+                this.devManager.getChangeBuffer().get().clear();
+                // Tell devManager the trans begins
+                this.devManager.setInTransIndicator(true);
+                // Before advice
+                this.doCommitTransactionJob();
+                // After advice
+                this.doCommit();
+            }catch (Exception e){
+                // Exception advice
+                this.doException(e);
+            }finally {
+                // Final advice
+                this.doFinally();
+            }
         }
     }
 
